@@ -18,10 +18,10 @@ router.post('/register', validateRegistration, AuthController.register);
 // POST /auth/logout - User logout
 router.post('/logout', authenticateToken, AuthController.logout);
 
-// GET /auth/profile - Get current user profile
-router.get('/profile', authenticateToken, AuthController.getProfile);
+// GET /auth/me - Get current authenticated user
+router.get('/me', authenticateToken, AuthController.getMe);
 
-// GET /auth/verify - Verify token and get user info
+// GET /auth/verify - Verify token and get user info (keeping for compatibility)
 router.get('/verify', AuthController.verifyToken);
 
 module.exports = router;
