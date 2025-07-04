@@ -14,7 +14,6 @@ import Navbar from '../../components/Navbar';
 
 const AdminDashboard = () => {
   const { currentUser, logout } = useAuth();
-
   const handleLogout = () => {
     logout();
   };

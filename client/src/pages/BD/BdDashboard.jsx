@@ -2,31 +2,24 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Button,
   Container,
-  Grid,
+  Alert,
   Card,
   CardContent,
-  CardHeader,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Alert
+  Grid,
+  Avatar
 } from '@mui/material';
+import { 
+  Person,
+  LocationOn
+} from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
 
 const BdDashboard = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const [location, setLocation] = useState(null);
   const [locationError, setLocationError] = useState('');
-  // Sample assigned bus operators - in a real app, these would come from the backend
-  const [assignedOperators, setAssignedOperators] = useState([
-    { id: 1, name: 'City Bus Lines', address: '123 Main St, Downtown', lastVisit: '2025-06-15' },
-    { id: 2, name: 'Metro Transit', address: '456 Park Ave, Uptown', lastVisit: '2025-06-20' },
-    { id: 3, name: 'Express Shuttle', address: '789 Broadway, Midtown', lastVisit: null }
-  ]);
 
   useEffect(() => {
     // Get the user's current location when the dashboard loads
@@ -48,23 +41,23 @@ const BdDashboard = () => {
     }
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const formatTime = () => {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
   };
 
-  const handleCheckIn = (operatorId) => {
-    if (!location) {
-      setLocationError('Location data is required for check-in.');
-      return;
-    }
-
-    // In a real app, you would send this data to your backend
-    alert(`Check-in with Operator ID: ${operatorId}\nLocation: ${location.latitude}, ${location.longitude}`);
-
-    // Update the last visit date for the operator (in a real app, this would happen after API confirmation)
-    setAssignedOperators(prev =>
-      prev.map(op => op.id === operatorId ? {...op, lastVisit: new Date().toISOString().split('T')[0]} : op)
-    );
+  const formatDate = () => {
+    const now = new Date();
+    return now.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
   return (
@@ -72,87 +65,100 @@ const BdDashboard = () => {
       <Navbar />
       <Container maxWidth="lg">
         <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            BD Executive Dashboard
-          </Typography>
+          {/* Welcome Section */}
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Avatar 
+              sx={{ 
+                width: 80, 
+                height: 80, 
+                bgcolor: 'primary.main', 
+                fontSize: '2rem',
+                mx: 'auto',
+                mb: 2
+              }}
+            >
+              {currentUser?.name?.[0] || currentUser?.email?.[0] || 'U'}
+            </Avatar>
+            <Typography variant="h3" component="h1" gutterBottom>
+              Hello, {currentUser?.name || currentUser?.email || 'User'}!
+            </Typography>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              Welcome to your BD Executive Dashboard
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {formatDate()} • {formatTime()}
+            </Typography>
+          </Box>
 
+          {/* Status Cards */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center">
+                    <Person sx={{ mr: 2, color: 'primary.main' }} />
+                    <Box>
+                      <Typography variant="h6">
+                        BD Executive
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Role: Business Development Executive
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Box display="flex" alignItems="center">
+                    <LocationOn sx={{ mr: 2, color: 'primary.main' }} />
+                    <Box>
+                      <Typography variant="h6">
+                        Location Status
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {location ? 
+                          `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : 
+                          'Location not available'
+                        }
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Location Error Alert */}
           {locationError && (
             <Alert severity="warning" sx={{ mb: 3 }}>
               {locationError}
             </Alert>
           )}
 
-          {location && (
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Your current location: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-            </Alert>
-          )}
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardHeader title="Your Assigned Bus Operators" />
-                <CardContent>
-                  <List>
-                    {assignedOperators.map((operator, index) => (
-                      <React.Fragment key={operator.id}>
-                        {index > 0 && <Divider />}
-                        <ListItem
-                          secondaryAction={
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              onClick={() => handleCheckIn(operator.id)}
-                            >
-                              Check In
-                            </Button>
-                          }
-                        >
-                          <ListItemText
-                            primary={operator.name}
-                            secondary={
-                              <>
-                                <Typography component="span" variant="body2" color="text.primary">
-                                  {operator.address}
-                                </Typography>
-                                <br />
-                                {operator.lastVisit ? `Last visit: ${operator.lastVisit}` : 'Never visited'}
-                              </>
-                            }
-                          />
-                        </ListItem>
-                      </React.Fragment>
-                    ))}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardHeader title="Recent Check-ins" />
-                <CardContent>
-                  <List>
-                    {assignedOperators
-                      .filter(op => op.lastVisit)
-                      .sort((a, b) => new Date(b.lastVisit) - new Date(a.lastVisit))
-                      .slice(0, 3)
-                      .map((operator) => (
-                        <ListItem key={operator.id}>
-                          <ListItemText
-                            primary={operator.name}
-                            secondary={`Visited on: ${operator.lastVisit}`}
-                          />
-                        </ListItem>
-                      ))}
-                    {assignedOperators.filter(op => op.lastVisit).length === 0 && (
-                      <Typography variant="body2">No recent check-ins</Typography>
-                    )}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          {/* Instructions */}
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Quick Start Guide
+              </Typography>
+              <Typography variant="body1" paragraph>
+                • Click on <strong>"My Operators"</strong> in the navigation menu to view and manage your assigned bus operators
+              </Typography>
+              <Typography variant="body1" paragraph>
+                • Use the <strong>"Check-in"</strong> feature to record your visits to operator locations
+              </Typography>
+              <Typography variant="body1" paragraph>
+                • View your <strong>"History"</strong> to track your past activities and check-ins
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Use the navigation menu above to access all available features.
+              </Typography>
+            </CardContent>
+          </Card>
         </Box>
       </Container>
     </>

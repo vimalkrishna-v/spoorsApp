@@ -7,10 +7,9 @@ import {
   Typography,
   Box,
   Alert,
-  Divider,
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { validateForm } from '../../utils/validators';
 
 const Login = () => {
@@ -24,9 +23,6 @@ const Login = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from?.pathname || '/';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
