@@ -1,32 +1,93 @@
 # Spoors App Server
 
-A simple Express.js server with clean directory structure.
+A Node.js/Express server with JWT-based authentication and role-based authorization for Business Development (BD) and Administrator (Adm) users.
 
-## Getting Started
+## Features
 
-### Installation
+- **JWT Authentication**: Secure token-based authentication
+- **Role-Based Authorization**: BD and Admin roles with different permissions
+- **MongoDB Integration**: User data stored in MongoDB with password hashing
+- **Input Validation**: Comprehensive request validation middleware
+- **Error Handling**: Global error handling with detailed error responses
+- **Security**: CORS, security headers, and password hashing with bcrypt
+- **Production Ready**: Clean code structure following best practices
 
-1. Navigate to the server directory:
+## Tech Stack
+
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens)
+- **Password Hashing**: bcryptjs
+- **Validation**: Custom middleware
+- **Environment**: dotenv for configuration
+
+## Project Structure
+
+```
+server/
+├── config/
+│   └── database.js          # MongoDB connection configuration
+├── controllers/
+│   ├── authController.js    # Authentication logic
+│   └── dashboardController.js # Dashboard logic
+├── middleware/
+│   ├── auth.js             # JWT authentication & authorization
+│   ├── validation.js       # Input validation
+│   └── errorHandler.js     # Global error handling
+├── models/
+│   └── User.js             # User model schema
+├── routes/
+│   ├── auth.js             # Authentication routes
+│   ├── dashboard.js        # Dashboard routes
+│   └── api.js              # General API routes
+├── scripts/
+│   └── seedUsers.js        # Database seeding script
+├── utils/
+│   └── tokenUtils.js       # JWT utility functions
+├── .env                    # Environment variables
+├── index.js               # Main server file
+└── package.json           # Dependencies and scripts
+```
+
+## Installation
+
+1. **Clone the repository and navigate to server directory**:
    ```bash
    cd server
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. Start the development server:
-   ```bash
-   npm run dev
+3. **Configure environment variables**:
+   The `.env` file is already configured with sample values. Update as needed:
+   ```env
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/spoors_app
+   JWT_SECRET=your_super_secure_jwt_secret_key_change_this_in_production
+   JWT_EXPIRES_IN=24h
+   NODE_ENV=development
+   CLIENT_URL=http://localhost:3000
    ```
 
-   Or for production:
+4. **Start MongoDB** (make sure MongoDB is running on your system)
+
+5. **Seed the database with sample users**:
    ```bash
+   npm run seed
+   ```
+
+6. **Start the server**:
+   ```bash
+   # Development mode with auto-restart
+   npm run dev
+   
+   # Production mode
    npm start
    ```
-
-The server will run on `http://localhost:5000`
 
 ## Project Structure
 

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spoors App - Authentication Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .dashboard {
+            display: none;
+            background-color: #e7f3ff;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Spoors App - Authentication Demo</h1>
+        
+        <!-- Login Form -->
+        <div id="loginForm">
+            <h2>Login</h2>
+            <form id="login">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" value="bd.user@spoors.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" value="password123" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            
+            <h3>Test Users:</h3>
+            <ul>
+                <li><strong>BD User:</strong> bd.user@spoors.com / password123</li>
+                <li><strong>Admin User:</strong> admin.user@spoors.com / password123</li>
+            </ul>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registerForm" style="margin-top: 30px;">
+            <h2>Register New User</h2>
+            <form id="register">
+                <div class="form-group">
+                    <label for="regEmail">Email:</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password:</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="regRole">Role:</label>
+                    <select id="regRole" required>
+                        <option value="">Select Role</option>
+                        <option value="BD">BD (Business Development)</option>
+                        <option value="Admin">Admin (Administrator)</option>
+                    </select>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard">
+            <h2>Welcome to Your Dashboard!</h2>
+            <div id="userInfo" class="user-info"></div>
+            <button id="logout">Logout</button>
+            <button id="getDashboard">Get Dashboard Data</button>
+            <button id="getProfile">Get Profile</button>
+            <div id="dashboardData"></div>
+        </div>
+
+        <!-- Messages -->
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let currentToken = localStorage.getItem('token');
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const dashboard = document.getElementById('dashboard');
+        const messages = document.getElementById('messages');
+
+        // Check if user is already logged in
+        if (currentToken) {
+            verifyToken();
+        }
+
+        // Login form handler
+        document.getElementById('login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentToken = data.data.accessToken;
+                    localStorage.setItem('token', currentToken);
+                    showDashboard(data.data.user);
+                    showMessage('Login successful!', 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Login failed: ' + error.message, 'error');
+            }
+        });
+
+        // Register form handler
+        document.getElementById('register').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentToken = data.data.accessToken;
+                    localStorage.setItem('token', currentToken);
+                    showDashboard(data.data.user);
+                    showMessage('Registration successful!', 'success');
+                } else {
+                    showMessage(data.message + (data.errors ? ': ' + data.errors.join(', ') : ''), 'error');
+                }
+            } catch (error) {
+                showMessage('Registration failed: ' + error.message, 'error');
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logout').addEventListener('click', async () => {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            currentToken = null;
+            localStorage.removeItem('token');
+            showLogin();
+            showMessage('Logged out successfully', 'success');
+        });
+
+        // Get dashboard data
+        document.getElementById('getDashboard').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('dashboardData').innerHTML = `
+                        <h3>Dashboard Data:</h3>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to get dashboard data: ' + error.message, 'error');
+            }
+        });
+
+        // Get profile
+        document.getElementById('getProfile').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('dashboardData').innerHTML = `
+                        <h3>Profile Data:</h3>
+                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                    `;
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to get profile: ' + error.message, 'error');
+            }
+        });
+
+        // Verify token
+        async function verifyToken() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showDashboard(data.data.user);
+                } else {
+                    localStorage.removeItem('token');
+                    currentToken = null;
+                    showLogin();
+                }
+            } catch (error) {
+                localStorage.removeItem('token');
+                currentToken = null;
+                showLogin();
+            }
+        }
+
+        // Show dashboard
+        function showDashboard(user) {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'none';
+            dashboard.style.display = 'block';
+            
+            document.getElementById('userInfo').innerHTML = `
+                <h3>User Information:</h3>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Role:</strong> ${user.role}</p>
+                <p><strong>Last Login:</strong> ${new Date(user.lastLogin).toLocaleString()}</p>
+            `;
+        }
+
+        // Show login
+        function showLogin() {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'block';
+            dashboard.style.display = 'none';
+            document.getElementById('dashboardData').innerHTML = '';
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            messages.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messages.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
