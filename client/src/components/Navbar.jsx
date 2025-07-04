@@ -47,7 +47,7 @@ const Navbar = () => {
   const adminNavItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/admin/dashboard' },
     { text: 'Bus Operators', icon: <DirectionsBus />, path: '/admin/bus-operators' },
-    { text: 'BD Executives', icon: <People />, path: '/admin/executives' },
+    { text: 'BD Executives', icon: <People />, path: '/admin/bd-executives' },
     { text: 'Assignments', icon: <AssignmentInd />, path: '/admin/assignments' },
     { text: 'Reports', icon: <Assessment />, path: '/admin/reports' },
   ];
@@ -60,7 +60,7 @@ const Navbar = () => {
   ];
 
   // Choose navigation items based on user role
-  const navItems = currentUser?.role === 'admin' ? adminNavItems : bdNavItems;
+  const navItems = currentUser?.role?.toLowerCase() === 'admin' ? adminNavItems : bdNavItems;
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
