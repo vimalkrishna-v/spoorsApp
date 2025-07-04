@@ -135,7 +135,7 @@
             <div id="userInfo" class="user-info"></div>
             <button id="logout">Logout</button>
             <button id="getDashboard">Get Dashboard Data</button>
-            <button id="getProfile">Get Profile</button>
+            <button id="getProfile">Get Me (/auth/me)</button>
             <div id="dashboardData"></div>
         </div>
 
@@ -175,13 +175,13 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    currentToken = data.data.accessToken;
+                if (response.ok && data.user && data.token) {
+                    currentToken = data.token;
                     localStorage.setItem('token', currentToken);
-                    showDashboard(data.data.user);
-                    showMessage('Login successful!', 'success');
+                    showDashboard(data.user);
+                    showMessage(data.message || 'Login successful!', 'success');
                 } else {
-                    showMessage(data.message, 'error');
+                    showMessage(data.message || 'Login failed', 'error');
                 }
             } catch (error) {
                 showMessage('Login failed: ' + error.message, 'error');
@@ -206,11 +206,11 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    currentToken = data.data.accessToken;
+                if (response.ok && data.user && data.token) {
+                    currentToken = data.token;
                     localStorage.setItem('token', currentToken);
-                    showDashboard(data.data.user);
-                    showMessage('Registration successful!', 'success');
+                    showDashboard(data.user);
+                    showMessage(data.message || 'Registration successful!', 'success');
                 } else {
                     showMessage(data.message + (data.errors ? ': ' + data.errors.join(', ') : ''), 'error');
                 }
@@ -265,7 +265,7 @@
         // Get profile
         document.getElementById('getProfile').addEventListener('click', async () => {
             try {
-                const response = await fetch(`${API_BASE}/auth/profile`, {
+                const response = await fetch(`${API_BASE}/auth/me`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -273,10 +273,10 @@
 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok && data.user) {
                     document.getElementById('dashboardData').innerHTML = `
                         <h3>Profile Data:</h3>
-                        <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
                     `;
                 } else {
                     showMessage(data.message, 'error');
@@ -289,7 +289,7 @@
         // Verify token
         async function verifyToken() {
             try {
-                const response = await fetch(`${API_BASE}/auth/verify`, {
+                const response = await fetch(`${API_BASE}/auth/me`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -297,8 +297,8 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    showDashboard(data.data.user);
+                if (response.ok && data.user) {
+                    showDashboard(data.user);
                 } else {
                     localStorage.removeItem('token');
                     currentToken = null;

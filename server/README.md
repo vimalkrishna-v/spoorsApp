@@ -132,3 +132,154 @@ app.use('/api/products', productRoutes);
 
 - `npm start` - Start production server
 - `npm run dev` - Start development server with nodemon
+
+## API Endpoints
+
+### Authentication Endpoints
+
+#### POST /api/auth/login
+Login with email and password.
+
+**Request Body:**
+```json
+{
+  "email": "bd.user@spoors.com",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "_id": "...",
+    "email": "bd.user@spoors.com",
+    "role": "BD",
+    "isActive": true,
+    "lastLogin": "2025-07-04T...",
+    "createdAt": "2025-07-04T...",
+    "updatedAt": "2025-07-04T..."
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "message": "Login successful"
+}
+```
+
+#### POST /api/auth/register
+Register a new user (for development/admin purposes).
+
+**Request Body:**
+```json
+{
+  "email": "new.user@spoors.com",
+  "password": "password123",
+  "role": "BD"
+}
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "_id": "...",
+    "email": "new.user@spoors.com",
+    "role": "BD",
+    "isActive": true,
+    "createdAt": "2025-07-04T...",
+    "updatedAt": "2025-07-04T..."
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "message": "User registered successfully"
+}
+```
+
+#### POST /api/auth/logout
+Logout the current user (requires authentication).
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+#### GET /api/auth/me
+Get current authenticated user information.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "_id": "...",
+    "email": "bd.user@spoors.com",
+    "role": "BD",
+    "isActive": true,
+    "lastLogin": "2025-07-04T...",
+    "createdAt": "2025-07-04T...",
+    "updatedAt": "2025-07-04T..."
+  },
+  "message": "User data retrieved successfully"
+}
+```
+
+### Dashboard Endpoints
+
+All dashboard endpoints require authentication via JWT token in the Authorization header.
+
+#### GET /api/dashboard
+Get dashboard data based on user role.
+
+#### GET /api/dashboard/bd
+Get BD-specific dashboard (BD role only).
+
+#### GET /api/dashboard/admin
+Get Admin-specific dashboard (Admin role only).
+
+### General Endpoints
+
+#### GET /
+Server status and information.
+
+#### GET /health
+Health check endpoint.
+
+## Frontend Integration
+
+The API is designed to work seamlessly with React frontends. Key integration points:
+
+### Authentication Flow
+1. **Login**: `POST /api/auth/login` → Receive user object and JWT token
+2. **Store Token**: Save JWT token in localStorage or secure storage
+3. **Authenticated Requests**: Include `Authorization: Bearer <token>` header
+4. **Get User**: `GET /api/auth/me` → Get current user data
+5. **Logout**: `POST /api/auth/logout` → Clear token from storage
+
+### Example Frontend Usage
+```javascript
+// Login
+const response = await fetch('/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+});
+const { user, token, message } = await response.json();
+
+// Store token
+localStorage.setItem('authToken', token);
+
+// Authenticated request
+const userResponse = await fetch('/api/auth/me', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const { user } = await userResponse.json();
+```
