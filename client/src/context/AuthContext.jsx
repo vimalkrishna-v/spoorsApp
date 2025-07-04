@@ -10,12 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Sample credentials for testing (in real app, this would come from backend)
-  const sampleUsers = [
-    { id: 1, email: 'admin@spoorsapp.com', password: 'admin123', role: 'admin', name: 'Admin User' },
-    { id: 2, email: 'bd@spoorsapp.com', password: 'bd1234', role: 'bd', name: 'BD Executive' },
-  ];
-
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
     const user = localStorage.getItem('spoorsUser');
@@ -27,30 +21,31 @@ export const AuthProvider = ({ children }) => {
 
   // Login function
   const login = async (email, password) => {
-    // In a real app, this would be an API call
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const user = sampleUsers.find(
-          (u) => u.email === email && u.password === password
-        );
-
-        if (user) {
-          // Remove password from the user object for security
-          const { password, ...secureUser } = user;
-          setCurrentUser(secureUser);
-          localStorage.setItem('spoorsUser', JSON.stringify(secureUser));
-          resolve(secureUser);
-        } else {
-          reject(new Error('Invalid email or password'));
-        }
-      }, 500); // Simulate API delay
-    });
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+      const data = await response.json();
+      setCurrentUser(data.user);
+      localStorage.setItem('spoorsUser', JSON.stringify(data.user));
+      localStorage.setItem('spoorsToken', data.token);
+      return data.user;
+    } catch (err) {
+      throw err;
+    }
   };
 
   // Logout function
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('spoorsUser');
+    localStorage.removeItem('spoorsToken');
   };
 
   const value = {

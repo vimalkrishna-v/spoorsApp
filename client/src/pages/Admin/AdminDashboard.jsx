@@ -60,8 +60,13 @@ const AdminDashboard = () => {
                   <Typography variant="body1">
                     Add, edit, or remove bus operators from the system.
                   </Typography>
-                  <Button variant="contained" color="primary" sx={{ mt: 2 }}>
-                    Manage Operators
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mt: 2, mr: 2 }}
+                    href="/admin/bus-operators"
+                  >
+                    Manage Bus Operators
                   </Button>
                 </CardContent>
               </Card>

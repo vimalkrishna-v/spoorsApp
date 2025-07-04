@@ -37,21 +37,10 @@ class AuthController {
       // Generate access token
       const accessToken = TokenUtils.generateAccessToken(user);
 
-      // Determine redirect URL based on role
-      const redirectUrls = {
-        'BD': `${process.env.CLIENT_URL}/dashboard/bd`,
-        'Admin': `${process.env.CLIENT_URL}/dashboard/admin`
-      };
-
       res.status(200).json({
-        success: true,
-        message: 'Login successful',
-        data: {
-          user: user.toJSON(),
-          accessToken,
-          redirectUrl: redirectUrls[user.role],
-          expiresIn: process.env.JWT_EXPIRES_IN || '24h'
-        }
+        user: user.toJSON(),
+        token: accessToken,
+        message: 'Login successful'
       });
 
     } catch (error) {
@@ -91,21 +80,10 @@ class AuthController {
       // Generate access token
       const accessToken = TokenUtils.generateAccessToken(user);
 
-      // Determine redirect URL based on role
-      const redirectUrls = {
-        'BD': `${process.env.CLIENT_URL}/dashboard/bd`,
-        'Admin': `${process.env.CLIENT_URL}/dashboard/admin`
-      };
-
       res.status(201).json({
-        success: true,
-        message: 'User registered successfully',
-        data: {
-          user: user.toJSON(),
-          accessToken,
-          redirectUrl: redirectUrls[user.role],
-          expiresIn: process.env.JWT_EXPIRES_IN || '24h'
-        }
+        user: user.toJSON(),
+        token: accessToken,
+        message: 'User registered successfully'
       });
 
     } catch (error) {
@@ -144,7 +122,6 @@ class AuthController {
       // In a more advanced implementation, you might want to blacklist the token
       // For now, we'll just send a success response
       res.status(200).json({
-        success: true,
         message: 'Logout successful'
       });
     } catch (error) {
@@ -157,7 +134,28 @@ class AuthController {
   }
 
   /**
-   * Get current user profile
+   * Get current authenticated user (GET /auth/me)
+   */
+  static async getMe(req, res) {
+    try {
+      // User is already attached to req by auth middleware
+      const user = req.user;
+
+      res.status(200).json({
+        user: user.toJSON(),
+        message: 'User data retrieved successfully'
+      });
+    } catch (error) {
+      console.error('Get me error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Get current user profile (backward compatibility)
    */
   static async getProfile(req, res) {
     try {
