@@ -15,9 +15,10 @@ const ProtectedRoute = ({ element, requiredRole }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && currentUser.role !== requiredRole) {
+  let userRole = currentUser.role?.toLowerCase();
+  if (requiredRole && userRole !== requiredRole) {
     // Redirect to appropriate dashboard if authenticated but wrong role
-    const dashboardPath = currentUser.role === 'admin' ? '/admin/dashboard' : '/bd/dashboard';
+    const dashboardPath = userRole === 'admin' ? '/admin/dashboard' : '/bd/dashboard';
     return <Navigate to={dashboardPath} replace />;
   }
 
@@ -32,7 +33,8 @@ const AppRouter = () => {
   const RedirectToDashboard = () => {
     if (!isAuthenticated) return <Navigate to="/login" />;
 
-    return currentUser.role === 'admin'
+    const role = currentUser.role?.toLowerCase();
+    return role === 'admin'
       ? <Navigate to="/admin/dashboard" />
       : <Navigate to="/bd/dashboard" />;
   };
