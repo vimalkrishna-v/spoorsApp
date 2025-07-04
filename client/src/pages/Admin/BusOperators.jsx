@@ -24,57 +24,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Navbar from '../../components/Navbar';
-
-const initialOperators = [
-  {
-    id: 'OP001',
-    name: 'ABC Travels',
-    latitude: '12.9716',
-    longitude: '77.5946',
-    contact: '9876543210',
-    bdExecutive: 'John Doe',
-  },
-  {
-    id: 'OP002',
-    name: 'XYZ Bus Lines',
-    latitude: '13.0827',
-    longitude: '80.2707',
-    contact: '9123456780',
-    bdExecutive: 'Jane Smith',
-  },
-  {
-    id: 'OP003',
-    name: 'Metro Travels',
-    latitude: '17.3850',
-    longitude: '78.4867',
-    contact: '9988776655',
-    bdExecutive: 'Emily Johnson',
-  },
-  {
-    id: 'OP004',
-    name: 'CityLink',
-    latitude: '19.0760',
-    longitude: '72.8777',
-    contact: '9876501234',
-    bdExecutive: 'Michael Brown',
-  },
-  {
-    id: 'OP005',
-    name: 'GreenLine',
-    latitude: '22.5726',
-    longitude: '88.3639',
-    contact: '9001122334',
-    bdExecutive: 'Jessica Davis',
-  },
-  {
-    id: 'OP006',
-    name: 'SuperFast',
-    latitude: '23.0225',
-    longitude: '72.5714',
-    contact: '9090909090',
-    bdExecutive: 'William Garcia',
-  },
-];
+import operatorApiService from '../../services/operatorApiService';
 
 const emptyOperator = {
   id: '',
@@ -86,21 +36,39 @@ const emptyOperator = {
 };
 
 const BusOperators = () => {
-  const [operators, setOperators] = useState(initialOperators);
+  const [operators, setOperators] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [selectedOperator, setSelectedOperator] = useState(emptyOperator);
   const [operatorToDelete, setOperatorToDelete] = useState(null);
   const [bdExecutives, setBdExecutives] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch BD Executives from backend
-    fetch('/api/bd-executives')
-      .then(res => res.json())
-      .then(data => setBdExecutives(data))
-      .catch(() => setBdExecutives([]));
+    fetchOperators();
+    fetchBdExecutives();
   }, []);
+
+  const fetchOperators = async () => {
+    setLoading(true);
+    try {
+      const res = await operatorApiService.getAllOperators();
+      setOperators(res.data || res.operators || []);
+    } catch (err) {
+      setOperators([]);
+    }
+    setLoading(false);
+  };
+
+  const fetchBdExecutives = async () => {
+    try {
+      const res = await operatorApiService.getAllBdExecutives();
+      setBdExecutives(res.data || res.executives || []);
+    } catch (err) {
+      setBdExecutives([]);
+    }
+  };
 
   const generateOperatorId = () => {
     // Generate a unique ID in the format OPXXX (incremental based on current max)
@@ -143,19 +111,28 @@ const BusOperators = () => {
     setSelectedOperator({ ...selectedOperator, [e.target.name]: e.target.value });
   };
 
-  const handleAddOperator = () => {
-    setOperators([...operators, selectedOperator]);
-    handleCloseModal();
+  const handleAddOperator = async () => {
+    try {
+      await operatorApiService.addOperator(selectedOperator);
+      fetchOperators();
+      handleCloseModal();
+    } catch (err) {}
   };
 
-  const handleUpdateOperator = () => {
-    setOperators(operators.map(op => op.id === selectedOperator.id ? selectedOperator : op));
-    handleCloseModal();
+  const handleUpdateOperator = async () => {
+    try {
+      await operatorApiService.updateOperator(selectedOperator.id, selectedOperator);
+      fetchOperators();
+      handleCloseModal();
+    } catch (err) {}
   };
 
-  const handleDeleteOperator = () => {
-    setOperators(operators.filter(op => op.id !== operatorToDelete.id));
-    handleCloseDeleteModal();
+  const handleDeleteOperator = async () => {
+    try {
+      await operatorApiService.deleteOperator(operatorToDelete.id);
+      fetchOperators();
+      handleCloseDeleteModal();
+    } catch (err) {}
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -22,33 +22,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Navbar from '../../components/Navbar';
-
-const initialExecutives = [
-  {
-    id: 'BD001',
-    name: 'John Doe',
-    email: 'john.doe@spoorsapp.com',
-    password: 'bd1234',
-    contact: '9876543210',
-    assignedOperators: ['OP001', 'OP002'],
-  },
-  {
-    id: 'BD002',
-    name: 'Jane Smith',
-    email: 'jane.smith@spoorsapp.com',
-    password: 'bd5678',
-    contact: '9123456780',
-    assignedOperators: ['OP003'],
-  },
-  {
-    id: 'BD003',
-    name: 'Amit Kumar',
-    email: 'amit.kumar@spoorsapp.com',
-    password: 'bd9999',
-    contact: '9988776655',
-    assignedOperators: [],
-  },
-];
+import operatorApiService from '../../services/operatorApiService';
 
 const emptyExecutive = {
   id: '',
@@ -59,22 +33,38 @@ const emptyExecutive = {
   assignedOperators: [],
 };
 
-const generateExecutiveId = (executives) => {
-  const maxId = executives.reduce((max, ex) => {
-    const num = parseInt(ex.id.replace('BD', ''), 10);
-    return num > max ? num : max;
-  }, 0);
-  const nextId = maxId + 1;
-  return `BD${nextId.toString().padStart(3, '0')}`;
-};
-
 const BdExecutives = () => {
-  const [executives, setExecutives] = useState(initialExecutives);
+  const [executives, setExecutives] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [selectedExecutive, setSelectedExecutive] = useState(emptyExecutive);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [executiveToDelete, setExecutiveToDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchExecutives();
+  }, []);
+
+  const fetchExecutives = async () => {
+    setLoading(true);
+    try {
+      const res = await operatorApiService.getAllBdExecutives();
+      setExecutives(res.data || res.executives || []);
+    } catch (err) {
+      setExecutives([]);
+    }
+    setLoading(false);
+  };
+
+  const generateExecutiveId = (executives) => {
+    const maxId = executives.reduce((max, ex) => {
+      const num = parseInt(ex.id.replace('BD', ''), 10);
+      return num > max ? num : max;
+    }, 0);
+    const nextId = maxId + 1;
+    return `BD${nextId.toString().padStart(3, '0')}`;
+  };
 
   const handleOpenAddModal = () => {
     setModalMode('add');
@@ -107,19 +97,28 @@ const BdExecutives = () => {
     setSelectedExecutive({ ...selectedExecutive, [e.target.name]: e.target.value });
   };
 
-  const handleAddExecutive = () => {
-    setExecutives([...executives, selectedExecutive]);
-    handleCloseModal();
+  const handleAddExecutive = async () => {
+    try {
+      await operatorApiService.addBdExecutive(selectedExecutive);
+      fetchExecutives();
+      handleCloseModal();
+    } catch (err) {}
   };
 
-  const handleUpdateExecutive = () => {
-    setExecutives(executives.map(ex => ex.id === selectedExecutive.id ? selectedExecutive : ex));
-    handleCloseModal();
+  const handleUpdateExecutive = async () => {
+    try {
+      await operatorApiService.updateBdExecutive(selectedExecutive.id, selectedExecutive);
+      fetchExecutives();
+      handleCloseModal();
+    } catch (err) {}
   };
 
-  const handleDeleteExecutive = () => {
-    setExecutives(executives.filter(ex => ex.id !== executiveToDelete.id));
-    handleCloseDeleteModal();
+  const handleDeleteExecutive = async () => {
+    try {
+      await operatorApiService.deleteBdExecutive(executiveToDelete.id);
+      fetchExecutives();
+      handleCloseDeleteModal();
+    } catch (err) {}
   };
 
   return (
@@ -254,4 +253,3 @@ const BdExecutives = () => {
 };
 
 export default BdExecutives;
-

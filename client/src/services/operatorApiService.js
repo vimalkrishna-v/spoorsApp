@@ -128,6 +128,64 @@ class OperatorApiService {
       throw error;
     }
   }
+
+  // --- Admin CRUD Operations ---
+  // Get all operators (admin)
+  async getAllOperators() {
+    return this.request('/operators');
+  }
+
+  // Add a new operator
+  async addOperator(operator) {
+    return this.request('/operators', {
+      method: 'POST',
+      body: JSON.stringify(operator)
+    });
+  }
+
+  // Update an operator
+  async updateOperator(id, operator) {
+    return this.request(`/operators/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(operator)
+    });
+  }
+
+  // Delete an operator
+  async deleteOperator(id) {
+    return this.request(`/operators/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- BD Executives ---
+  // Get all BD executives
+  async getAllBdExecutives() {
+    return this.request('/bd-executives');
+  }
+
+  // Add a new BD executive
+  async addBdExecutive(executive) {
+    return this.request('/bd-executives', {
+      method: 'POST',
+      body: JSON.stringify(executive)
+    });
+  }
+
+  // Update a BD executive
+  async updateBdExecutive(id, executive) {
+    return this.request(`/bd-executives/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(executive)
+    });
+  }
+
+  // Delete a BD executive
+  async deleteBdExecutive(id) {
+    return this.request(`/bd-executives/${id}`, {
+      method: 'DELETE'
+    });
+  }
 }
 
 // Create and export a singleton instance

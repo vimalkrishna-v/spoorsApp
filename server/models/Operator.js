@@ -2,55 +2,36 @@ const mongoose = require('mongoose');
 
 // Main operator schema
 const operatorSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
   name: {
     type: String,
     required: true,
     trim: true
   },
-  address: {
+  latitude: {
     type: String,
     required: true,
     trim: true
   },
-  contactPerson: {
+  longitude: {
     type: String,
     required: true,
     trim: true
   },
-  phone: {
+  contact: {
     type: String,
     required: true,
     trim: true
   },
-  email: {
-    type: String,
+  bdExecutive: {
+    type: String, // user id or name
     required: true,
-    trim: true,
-    lowercase: true
-  },
-  status: {
-    type: String,
-    enum: ['active', 'inactive', 'pending'],
-    default: 'active'
-  },
-  coordinates: {
-    lat: {
-      type: Number,
-      required: true
-    },
-    lng: {
-      type: Number,
-      required: true
-    }
-  },
-  lastVisit: {
-    type: Date,
-    default: null
-  },
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    trim: true
   },
   createdAt: {
     type: Date,
@@ -64,13 +45,10 @@ const operatorSchema = new mongoose.Schema({
 
 // Update the updatedAt field before saving
 operatorSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
+  this.updatedAt = Date.now();
   next();
 });
 
-// Create indexes for better performance
-operatorSchema.index({ assignedTo: 1 });
-operatorSchema.index({ status: 1 });
-operatorSchema.index({ 'coordinates.lat': 1, 'coordinates.lng': 1 });
+const Operator = mongoose.model('Operator', operatorSchema);
 
-module.exports = mongoose.model('Operator', operatorSchema);
+module.exports = Operator;

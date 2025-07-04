@@ -38,6 +38,20 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
+    trim: true
+  },
+  contact: {
+    type: String,
+    required: [true, 'Contact is required'],
+    trim: true
+  },
+  assignedOperators: {
+    type: [String],
+    default: [],
   }
 });
 

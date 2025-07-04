@@ -72,7 +72,10 @@ class AuthController {
       const user = new User({
         email: email.toLowerCase(),
         password,
-        role
+        role,
+        name: req.body.name,
+        contact: req.body.contact,
+        assignedOperators: [],
       });
 
       await user.save();

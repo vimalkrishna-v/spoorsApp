@@ -37,4 +37,32 @@ router.put('/:operatorId', (req, res, next) => {
   next();
 }, operatorController.updateOperator);
 
+// Admin: Get all operators
+router.get('/all', (req, res, next) => {
+  if (req.user.role !== 'Admin') {
+    return res.status(403).json({ success: false, message: 'Access denied. Admin role required.' });
+  }
+  next();
+}, async (req, res) => {
+  const Operator = require('../models/Operator');
+  const operators = await Operator.find();
+  res.json({ success: true, data: operators });
+});
+
+// Admin: Create a new operator
+router.post('/', (req, res, next) => {
+  if (req.user.role !== 'Admin') {
+    return res.status(403).json({ success: false, message: 'Access denied. Admin role required.' });
+  }
+  next();
+}, operatorController.createOperator);
+
+// Admin: Delete an operator
+router.delete('/:id', (req, res, next) => {
+  if (req.user.role !== 'Admin') {
+    return res.status(403).json({ success: false, message: 'Access denied. Admin role required.' });
+  }
+  next();
+}, operatorController.deleteOperator);
+
 module.exports = router;

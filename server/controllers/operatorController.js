@@ -312,41 +312,92 @@ exports.getCheckInStatus = async (req, res) => {
   }
 };
 
-// Update operator information (for admin use)
+// Admin: Create a new operator and assign to BD
+exports.createOperator = async (req, res) => {
+  try {
+    const { id, name, latitude, longitude, contact, bdExecutive } = req.body;
+    if (!id || !name || !latitude || !longitude || !contact || !bdExecutive) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+    // Create operator
+    const operator = new Operator({ id, name, latitude, longitude, contact, bdExecutive });
+    await operator.save();
+    // Add operator id to assignedOperators of BD
+    await User.updateOne(
+      { $or: [{ _id: bdExecutive }, { name: bdExecutive }] },
+      { $addToSet: { assignedOperators: id } }
+    );
+    res.status(201).json({ success: true, operator });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error creating operator', error: error.message });
+  }
+};
+
+// Admin: Update operator and handle reassignment
 exports.updateOperator = async (req, res) => {
   try {
-    const { operatorId } = req.params;
-    const updates = req.body;
-
-    // Remove fields that shouldn't be updated directly
-    delete updates._id;
-    delete updates.createdAt;
-    delete updates.updatedAt;
-
-    const operator = await Operator.findByIdAndUpdate(
-      operatorId,
-      updates,
-      { new: true, runValidators: true }
-    );
-
-    if (!operator) {
-      return res.status(404).json({
-        success: false,
-        message: 'Operator not found'
-      });
+    const { id } = req.params;
+    const { name, latitude, longitude, contact, bdExecutive } = req.body;
+    const operator = await Operator.findOne({ id });
+    if (!operator) return res.status(404).json({ success: false, message: 'Operator not found' });
+    const oldBdExecutive = operator.bdExecutive;
+    // Update operator fields
+    operator.name = name;
+    operator.latitude = latitude;
+    operator.longitude = longitude;
+    operator.contact = contact;
+    operator.bdExecutive = bdExecutive;
+    await operator.save();
+    // If BD changed, update assignedOperators arrays
+    if (oldBdExecutive !== bdExecutive) {
+      await User.updateOne(
+        { $or: [{ _id: oldBdExecutive }, { name: oldBdExecutive }] },
+        { $pull: { assignedOperators: id } }
+      );
+      await User.updateOne(
+        { $or: [{ _id: bdExecutive }, { name: bdExecutive }] },
+        { $addToSet: { assignedOperators: id } }
+      );
     }
-
-    res.json({
-      success: true,
-      message: 'Operator updated successfully',
-      data: operator
-    });
+    res.json({ success: true, operator });
   } catch (error) {
-    console.error('Error updating operator:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating operator',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error updating operator', error: error.message });
+  }
+};
+
+// Admin: Delete operator and remove from BD's assignedOperators
+exports.deleteOperator = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const operator = await Operator.findOne({ id });
+    if (!operator) return res.status(404).json({ success: false, message: 'Operator not found' });
+    const bdExecutive = operator.bdExecutive;
+    await Operator.deleteOne({ id });
+    await User.updateOne(
+      { $or: [{ _id: bdExecutive }, { name: bdExecutive }] },
+      { $pull: { assignedOperators: id } }
+    );
+    res.json({ success: true, message: 'Operator deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting operator', error: error.message });
+  }
+};
+
+// Admin: Delete a BD executive and unassign their operators
+exports.deleteBdExecutive = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bdExecutive = await User.findOne({ _id: id, role: 'BD' });
+    if (!bdExecutive) return res.status(404).json({ success: false, message: 'BD Executive not found' });
+    // Unassign all operators assigned to this BD
+    await Operator.updateMany(
+      { bdExecutive: { $in: [id, bdExecutive.name] } },
+      { $set: { bdExecutive: null } }
+    );
+    // Delete the BD executive
+    await User.deleteOne({ _id: id });
+    res.json({ success: true, message: 'BD Executive deleted and operators unassigned' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting BD Executive', error: error.message });
   }
 };
