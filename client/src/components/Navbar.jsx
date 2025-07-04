@@ -46,7 +46,7 @@ const Navbar = () => {
   // Define navigation items based on user role
   const adminNavItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/admin/dashboard' },
-    { text: 'Bus Operators', icon: <DirectionsBus />, path: '/admin/operators' },
+    { text: 'Bus Operators', icon: <DirectionsBus />, path: '/admin/bus-operators' },
     { text: 'BD Executives', icon: <People />, path: '/admin/executives' },
     { text: 'Assignments', icon: <AssignmentInd />, path: '/admin/assignments' },
     { text: 'Reports', icon: <Assessment />, path: '/admin/reports' },

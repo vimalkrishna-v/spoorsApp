@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import Login from '../pages/Auth/Login';
 import AdminDashboard from '../pages/Admin/AdminDashboard';
 import BdDashboard from '../pages/BD/BdDashboard';
+import BusOperators from '../pages/Admin/BusOperators';
 
 // Protected Route component to handle authentication checks
 const ProtectedRoute = ({ element, requiredRole }) => {
@@ -49,7 +50,10 @@ const AppRouter = () => {
           path="/admin/dashboard"
           element={<ProtectedRoute element={<AdminDashboard />} requiredRole="admin" />}
         />
-
+        <Route
+          path="/admin/bus-operators"
+          element={<ProtectedRoute element={<BusOperators />} requiredRole="admin" />}
+        />
         <Route
           path="/bd/dashboard"
           element={<ProtectedRoute element={<BdDashboard />} requiredRole="bd" />}
