@@ -128,37 +128,6 @@ const Login = () => {
               {isLoading ? 'Logging in...' : 'Sign In'}
             </Button>
           </Box>
-
-          {/* Sample Credentials Box */}
-          <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #eee' }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 1 }}>
-              Sample Login Credentials:
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
-                  Admin User:
-                </Typography>
-                <Typography variant="caption" display="block">
-                  Email: admin@spoorsapp.com
-                </Typography>
-                <Typography variant="caption" display="block">
-                  Password: admin123
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
-                  BD Executive:
-                </Typography>
-                <Typography variant="caption" display="block">
-                  Email: bd@spoorsapp.com
-                </Typography>
-                <Typography variant="caption" display="block">
-                  Password: bd1234
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
         </Paper>
       </Box>
     </Container>

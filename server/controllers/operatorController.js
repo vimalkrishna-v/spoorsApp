@@ -19,10 +19,9 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 // Get all operators assigned to a BD user
 exports.getAssignedOperators = async (req, res) => {
   try {
-    const userId = req.user._id; // From auth middleware
+    const userEmail = req.user.email; // Use email for assignment
     
-    const operators = await Operator.find({ assignedTo: userId })
-      .populate('assignedTo', 'email role')
+    const operators = await Operator.find({ assignedTo: userEmail })
       .sort({ createdAt: -1 });
 
     // Get recent check-ins for each operator
@@ -30,7 +29,7 @@ exports.getAssignedOperators = async (req, res) => {
       operators.map(async (operator) => {
         const recentCheckIn = await CheckIn.findOne({
           operatorId: operator._id,
-          userId: userId,
+          userId: req.user._id,
           status: 'checked-in'
         }).sort({ checkInTime: -1 });
 
@@ -348,5 +347,21 @@ exports.updateOperator = async (req, res) => {
       message: 'Error updating operator',
       error: error.message
     });
+  }
+};
+
+// Add a new operator (admin only)
+exports.addOperator = async (req, res) => {
+  try {
+    const { name, address, contactPerson, phone, email, coordinates, assignedTo } = req.body;
+    // Validate assignedTo is a BD user
+    const user = await User.findOne({ _id: assignedTo, role: 'BD', isActive: true });
+    if (!user) return res.status(400).json({ success: false, message: 'Assigned user must be an active BD executive' });
+
+    const operator = new Operator({ name, address, contactPerson, phone, email, coordinates, assignedTo });
+    await operator.save();
+    res.json({ success: true, data: operator });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error adding operator', error: error.message });
   }
 };

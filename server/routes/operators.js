@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const operatorController = require('../controllers/operatorController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authorizeAdmin } = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
 router.use(authenticateToken);
@@ -36,5 +36,8 @@ router.put('/:operatorId', (req, res, next) => {
   }
   next();
 }, operatorController.updateOperator);
+
+// POST /api/operators - Add a new operator (admin only)
+router.post('/', authorizeAdmin, operatorController.addOperator);
 
 module.exports = router;

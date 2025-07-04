@@ -48,8 +48,7 @@ const operatorSchema = new mongoose.Schema({
     default: null
   },
   assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String, // email of BD
     required: true
   },
   createdAt: {

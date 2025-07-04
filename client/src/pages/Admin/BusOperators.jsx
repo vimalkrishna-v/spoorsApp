@@ -20,107 +20,88 @@ import {
   Select,
   InputLabel,
   FormControl,
+  CircularProgress
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Navbar from '../../components/Navbar';
 
-const initialOperators = [
-  {
-    id: 'OP001',
-    name: 'ABC Travels',
-    latitude: '12.9716',
-    longitude: '77.5946',
-    contact: '9876543210',
-    bdExecutive: 'John Doe',
-  },
-  {
-    id: 'OP002',
-    name: 'XYZ Bus Lines',
-    latitude: '13.0827',
-    longitude: '80.2707',
-    contact: '9123456780',
-    bdExecutive: 'Jane Smith',
-  },
-  {
-    id: 'OP003',
-    name: 'Metro Travels',
-    latitude: '17.3850',
-    longitude: '78.4867',
-    contact: '9988776655',
-    bdExecutive: 'Emily Johnson',
-  },
-  {
-    id: 'OP004',
-    name: 'CityLink',
-    latitude: '19.0760',
-    longitude: '72.8777',
-    contact: '9876501234',
-    bdExecutive: 'Michael Brown',
-  },
-  {
-    id: 'OP005',
-    name: 'GreenLine',
-    latitude: '22.5726',
-    longitude: '88.3639',
-    contact: '9001122334',
-    bdExecutive: 'Jessica Davis',
-  },
-  {
-    id: 'OP006',
-    name: 'SuperFast',
-    latitude: '23.0225',
-    longitude: '72.5714',
-    contact: '9090909090',
-    bdExecutive: 'William Garcia',
-  },
-];
-
 const emptyOperator = {
-  id: '',
+  _id: '',
   name: '',
+  address: '',
+  contactPerson: '',
+  phone: '',
+  email: '',
   latitude: '',
   longitude: '',
-  contact: '',
-  bdExecutive: '',
+  bdExecutive: '', // will store BD _id
 };
 
 const BusOperators = () => {
-  const [operators, setOperators] = useState(initialOperators);
+  const [operators, setOperators] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [selectedOperator, setSelectedOperator] = useState(emptyOperator);
   const [operatorToDelete, setOperatorToDelete] = useState(null);
   const [bdExecutives, setBdExecutives] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    // Fetch BD Executives from backend
-    fetch('/api/bd-executives')
-      .then(res => res.json())
-      .then(data => setBdExecutives(data))
-      .catch(() => setBdExecutives([]));
+    fetchOperators();
+    fetchBDs();
+    // eslint-disable-next-line
   }, []);
 
-  const generateOperatorId = () => {
-    // Generate a unique ID in the format OPXXX (incremental based on current max)
-    const maxId = operators.reduce((max, op) => {
-      const num = parseInt(op.id.replace('OP', ''), 10);
-      return num > max ? num : max;
-    }, 0);
-    const nextId = maxId + 1;
-    return `OP${nextId.toString().padStart(3, '0')}`;
+  const fetchOperators = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/operators', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOperators(data.data || []);
+      } else {
+        setOperators([]);
+      }
+    } catch {
+      setOperators([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBDs = async () => {
+    try {
+      const res = await fetch('/api/users/bd', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setBdExecutives(data.data || []);
+    } catch {
+      setBdExecutives([]);
+    }
   };
 
   const handleOpenAddModal = () => {
     setModalMode('add');
-    setSelectedOperator({ ...emptyOperator, id: generateOperatorId() });
+    setSelectedOperator({ ...emptyOperator });
     setModalOpen(true);
   };
 
   const handleOpenEditModal = (operator) => {
     setModalMode('edit');
-    setSelectedOperator(operator);
+    setSelectedOperator({
+      ...operator,
+      latitude: operator.coordinates?.lat || '',
+      longitude: operator.coordinates?.lng || '',
+      bdExecutive: operator.assignedTo?._id || '',
+    });
     setModalOpen(true);
   };
 
@@ -143,19 +124,99 @@ const BusOperators = () => {
     setSelectedOperator({ ...selectedOperator, [e.target.name]: e.target.value });
   };
 
-  const handleAddOperator = () => {
-    setOperators([...operators, selectedOperator]);
-    handleCloseModal();
+  const handleAddOperator = async () => {
+    setSaving(true);
+    const payload = {
+      name: selectedOperator.name,
+      address: selectedOperator.address,
+      contactPerson: selectedOperator.contactPerson,
+      phone: selectedOperator.phone,
+      email: selectedOperator.email,
+      coordinates: {
+        lat: parseFloat(selectedOperator.latitude),
+        lng: parseFloat(selectedOperator.longitude)
+      },
+      assignedTo: selectedOperator.bdExecutive
+    };
+    try {
+      const res = await fetch('/api/operators', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOperators([...operators, data.data]);
+        handleCloseModal();
+      } else {
+        alert(data.message || 'Failed to add operator');
+      }
+    } catch (err) {
+      alert('Failed to add operator');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleUpdateOperator = () => {
-    setOperators(operators.map(op => op.id === selectedOperator.id ? selectedOperator : op));
-    handleCloseModal();
+  const handleUpdateOperator = async () => {
+    setSaving(true);
+    const payload = {
+      name: selectedOperator.name,
+      address: selectedOperator.address,
+      contactPerson: selectedOperator.contactPerson,
+      phone: selectedOperator.phone,
+      email: selectedOperator.email,
+      coordinates: {
+        lat: parseFloat(selectedOperator.latitude),
+        lng: parseFloat(selectedOperator.longitude)
+      },
+      assignedTo: selectedOperator.bdExecutive
+    };
+    try {
+      const res = await fetch(`/api/operators/${selectedOperator._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOperators(operators.map(op => op._id === data.data._id ? data.data : op));
+        handleCloseModal();
+      } else {
+        alert(data.message || 'Failed to update operator');
+      }
+    } catch (err) {
+      alert('Failed to update operator');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDeleteOperator = () => {
-    setOperators(operators.filter(op => op.id !== operatorToDelete.id));
-    handleCloseDeleteModal();
+  const handleDeleteOperator = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/operators/${operatorToDelete._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOperators(operators.filter(op => op._id !== operatorToDelete._id));
+        handleCloseDeleteModal();
+      } else {
+        alert(data.message || 'Failed to delete operator');
+      }
+    } catch (err) {
+      alert('Failed to delete operator');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -168,41 +229,51 @@ const BusOperators = () => {
             Add Operator
           </Button>
         </Box>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Latitude</TableCell>
-                <TableCell>Longitude</TableCell>
-                <TableCell>Contact Number</TableCell>
-                <TableCell>BD Executive</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {operators.map((op) => (
-                <TableRow key={op.id}>
-                  <TableCell>{op.id}</TableCell>
-                  <TableCell>{op.name}</TableCell>
-                  <TableCell>{op.latitude}</TableCell>
-                  <TableCell>{op.longitude}</TableCell>
-                  <TableCell>{op.contact}</TableCell>
-                  <TableCell>{op.bdExecutive}</TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenEditModal(op)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleOpenDeleteModal(op)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Address</TableCell>
+                  <TableCell>Contact Person</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Latitude</TableCell>
+                  <TableCell>Longitude</TableCell>
+                  <TableCell>BD Executive</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {operators.map((op) => (
+                  <TableRow key={op._id}>
+                    <TableCell>{op.name}</TableCell>
+                    <TableCell>{op.address}</TableCell>
+                    <TableCell>{op.contactPerson}</TableCell>
+                    <TableCell>{op.phone}</TableCell>
+                    <TableCell>{op.email}</TableCell>
+                    <TableCell>{op.coordinates?.lat}</TableCell>
+                    <TableCell>{op.coordinates?.lng}</TableCell>
+                    <TableCell>{op.assignedTo?.email}</TableCell>
+                    <TableCell>
+                      <IconButton color="primary" onClick={() => handleOpenEditModal(op)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton color="error" onClick={() => handleOpenDeleteModal(op)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         {/* Add/Edit Modal */}
         <Dialog open={modalOpen} onClose={handleCloseModal}>
@@ -210,18 +281,41 @@ const BusOperators = () => {
           <DialogContent>
             <TextField
               margin="dense"
-              label="ID"
-              name="id"
-              value={selectedOperator.id}
-              onChange={handleChange}
-              fullWidth
-              disabled
-            />
-            <TextField
-              margin="dense"
               label="Name"
               name="name"
               value={selectedOperator.name}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              margin="dense"
+              label="Address"
+              name="address"
+              value={selectedOperator.address}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              margin="dense"
+              label="Contact Person"
+              name="contactPerson"
+              value={selectedOperator.contactPerson}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              margin="dense"
+              label="Phone"
+              name="phone"
+              value={selectedOperator.phone}
+              onChange={handleChange}
+              fullWidth
+            />
+            <TextField
+              margin="dense"
+              label="Email"
+              name="email"
+              value={selectedOperator.email}
               onChange={handleChange}
               fullWidth
             />
@@ -241,14 +335,6 @@ const BusOperators = () => {
               onChange={handleChange}
               fullWidth
             />
-            <TextField
-              margin="dense"
-              label="Contact Number"
-              name="contact"
-              value={selectedOperator.contact}
-              onChange={handleChange}
-              fullWidth
-            />
             <FormControl fullWidth margin="dense">
               <InputLabel id="bd-executive-label">BD Executive</InputLabel>
               <Select
@@ -259,7 +345,7 @@ const BusOperators = () => {
                 onChange={handleChange}
               >
                 {bdExecutives.map((exec) => (
-                  <MenuItem key={exec.id} value={exec.name}>{exec.name}</MenuItem>
+                  <MenuItem key={exec._id} value={exec._id}>{exec.email}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -267,9 +353,9 @@ const BusOperators = () => {
           <DialogActions>
             <Button onClick={handleCloseModal}>Cancel</Button>
             {modalMode === 'add' ? (
-              <Button onClick={handleAddOperator} variant="contained">Add Operator</Button>
+              <Button onClick={handleAddOperator} variant="contained" disabled={saving}>Add Operator</Button>
             ) : (
-              <Button onClick={handleUpdateOperator} variant="contained">Update</Button>
+              <Button onClick={handleUpdateOperator} variant="contained" disabled={saving}>Update</Button>
             )}
           </DialogActions>
         </Dialog>
@@ -284,7 +370,7 @@ const BusOperators = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDeleteModal}>Cancel</Button>
-            <Button onClick={handleDeleteOperator} color="error" variant="contained">Delete</Button>
+            <Button onClick={handleDeleteOperator} color="error" variant="contained" disabled={saving}>Delete</Button>
           </DialogActions>
         </Dialog>
       </Box>
