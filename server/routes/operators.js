@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const operatorController = require('../controllers/operatorController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
 router.use(authenticateToken);
 
-// Routes
+// Admin-only routes
+router.get('/admin/all', requireAdmin, operatorController.getAllOperators);
+router.post('/admin/create', requireAdmin, operatorController.createOperator);
+router.delete('/admin/:operatorId', requireAdmin, operatorController.deleteOperator);
+router.put('/admin/:operatorId', requireAdmin, operatorController.updateOperator);
+
+// BD User routes
 // GET /api/operators - Get all operators assigned to the BD user
 router.get('/', operatorController.getAssignedOperators);
 
@@ -24,17 +30,5 @@ router.get('/checkins/history', operatorController.getCheckInHistory);
 
 // GET /api/operators/checkins/status - Get current check-in status for all operators
 router.get('/checkins/status', operatorController.getCheckInStatus);
-
-// PUT /api/operators/:operatorId - Update operator information (admin only)
-router.put('/:operatorId', (req, res, next) => {
-  // Check if user is admin
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied. Admin role required.'
-    });
-  }
-  next();
-}, operatorController.updateOperator);
 
 module.exports = router;

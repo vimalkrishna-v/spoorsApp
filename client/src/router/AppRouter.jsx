@@ -5,7 +5,9 @@ import Login from '../pages/Auth/Login';
 import AdminDashboard from '../pages/Admin/AdminDashboard';
 import BdDashboard from '../pages/BD/BdDashboard';
 import MyOperators from '../pages/BD/MyOperators';
-import BusOperators from '../pages/Admin/BusOperators';
+import BusOperators from '../pages/Admin/BusOperators_new';
+import BDUsersManagement from '../pages/Admin/BDUsersManagement';
+import AssignmentManagement from '../pages/Admin/AssignmentManagement';
 
 
 // Protected Route component to handle authentication checks
@@ -57,6 +59,14 @@ const AppRouter = () => {
         <Route
           path="/admin/bus-operators"
           element={<ProtectedRoute element={<BusOperators />} requiredRole="admin" />}
+        />
+        <Route
+          path="/admin/bd-users"
+          element={<ProtectedRoute element={<BDUsersManagement />} requiredRole="admin" />}
+        />
+        <Route
+          path="/admin/assignments"
+          element={<ProtectedRoute element={<AssignmentManagement />} requiredRole="admin" />}
         />
         <Route
           path="/bd/dashboard"

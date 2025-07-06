@@ -8,7 +8,7 @@ class OperatorApiService {
 
   // Get authentication token from localStorage
   getToken() {
-    return localStorage.getItem('token');
+    return localStorage.getItem('spoorsToken');
   }
 
   // Create request headers with authentication
