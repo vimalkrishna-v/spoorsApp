@@ -28,16 +28,17 @@ exports.getAssignedOperators = async (req, res) => {
     // Get recent check-ins for each operator
     const operatorsWithCheckIns = await Promise.all(
       operators.map(async (operator) => {
-        const recentCheckIn = await CheckIn.findOne({
+        // Only count as checked in if there is an active check-in (not checked-out)
+        const activeCheckIn = await CheckIn.findOne({
           operatorId: operator._id,
           userId: userId,
-          status: 'checked-in'
-        }).sort({ checkInTime: -1 });
-
+          status: 'checked-in',
+          checkOutTime: null
+        });
         return {
           ...operator.toObject(),
-          currentlyCheckedIn: !!recentCheckIn,
-          lastCheckIn: recentCheckIn ? recentCheckIn.checkInTime : null
+          currentlyCheckedIn: !!activeCheckIn,
+          lastCheckIn: activeCheckIn ? activeCheckIn.checkInTime : null
         };
       })
     );
