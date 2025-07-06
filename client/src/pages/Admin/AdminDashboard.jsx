@@ -10,10 +10,13 @@ import {
   CardHeader
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 
 const AdminDashboard = () => {
   const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+  
   const handleLogout = () => {
     logout();
   };
@@ -30,7 +33,7 @@ const AdminDashboard = () => {
 
             <Box>
               <Typography variant="subtitle1" sx={{ mr: 2, display: 'inline' }}>
-                Welcome, {currentUser.name}
+                Welcome, {currentUser.email}
               </Typography>
               <Button variant="outlined" color="primary" onClick={handleLogout}>
                 Logout
@@ -40,31 +43,42 @@ const AdminDashboard = () => {
 
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Card>
-                <CardHeader title="Manage BD Executives" />
-                <CardContent>
-                  <Typography variant="body1">
-                    Create, update, and manage Business Development executive accounts.
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardHeader 
+                  title="Manage BD Users" 
+                  titleTypographyProps={{ variant: 'h6' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body1" color="textSecondary" paragraph>
+                    Create, update, and manage Business Development user accounts.
                   </Typography>
-                  <Button variant="contained" color="primary" sx={{ mt: 2 }}>
-                    Manage Executives
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={() => navigate('/admin/bd-users')}
+                    sx={{ mt: 'auto' }}
+                  >
+                    Manage BD Users
                   </Button>
                 </CardContent>
               </Card>
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Card>
-                <CardHeader title="Bus Operators" />
-                <CardContent>
-                  <Typography variant="body1">
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardHeader 
+                  title="Bus Operators" 
+                  titleTypographyProps={{ variant: 'h6' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body1" color="textSecondary" paragraph>
                     Add, edit, or remove bus operators from the system.
                   </Typography>
                   <Button
                     variant="contained"
                     color="secondary"
-                    sx={{ mt: 2, mr: 2 }}
-                    href="/admin/bus-operators"
+                    onClick={() => navigate('/admin/bus-operators')}
+                    sx={{ mt: 'auto' }}
                   >
                     Manage Bus Operators
                   </Button>
@@ -73,13 +87,21 @@ const AdminDashboard = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Card>
-                <CardHeader title="Assignments" />
-                <CardContent>
-                  <Typography variant="body1">
-                    Assign bus operators to BD executives.
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardHeader 
+                  title="Operator Assignments" 
+                  titleTypographyProps={{ variant: 'h6' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body1" color="textSecondary" paragraph>
+                    Assign bus operators to BD executives and manage assignments.
                   </Typography>
-                  <Button variant="contained" color="primary" sx={{ mt: 2 }}>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={() => navigate('/admin/assignments')}
+                    sx={{ mt: 'auto' }}
+                  >
                     Manage Assignments
                   </Button>
                 </CardContent>
@@ -87,14 +109,44 @@ const AdminDashboard = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Card>
-                <CardHeader title="Check-in Reports" />
-                <CardContent>
-                  <Typography variant="body1">
-                    View reports of all check-ins by BD executives.
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardHeader 
+                  title="Check-In Management" 
+                  titleTypographyProps={{ variant: 'h6' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body1" color="textSecondary" paragraph>
+                    Monitor BD user check-ins, location tracking, and session analytics.
                   </Typography>
-                  <Button variant="contained" color="primary" sx={{ mt: 2 }}>
-                    View Reports
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={() => navigate('/admin/checkins')}
+                    sx={{ mt: 'auto' }}
+                  >
+                    Manage Check-Ins
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardHeader 
+                  title="Reports & Analytics" 
+                  titleTypographyProps={{ variant: 'h6' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body1" color="textSecondary" paragraph>
+                    View comprehensive reports and system analytics.
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    disabled
+                    sx={{ mt: 'auto' }}
+                  >
+                    View Reports (Coming Soon)
                   </Button>
                 </CardContent>
               </Card>

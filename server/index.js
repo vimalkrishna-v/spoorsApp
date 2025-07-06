@@ -39,11 +39,13 @@ const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const apiRoutes = require('./routes/api');
 const operatorRoutes = require('./routes/operators');
+const checkInRoutes = require('./routes/checkins');
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/operators', operatorRoutes);
+app.use('/api/checkins', checkInRoutes);
 app.use('/api', apiRoutes);
 
 // Root endpoint

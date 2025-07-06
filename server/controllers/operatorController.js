@@ -350,3 +350,107 @@ exports.updateOperator = async (req, res) => {
     });
   }
 };
+
+// Get all operators (for admin)
+exports.getAllOperators = async (req, res) => {
+  try {
+    const operators = await Operator.find({})
+      .populate('assignedTo', 'email role')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: operators
+    });
+  } catch (error) {
+    console.error('Error fetching all operators:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch operators',
+      error: error.message
+    });
+  }
+};
+
+// Create new operator (for admin)
+exports.createOperator = async (req, res) => {
+  try {
+    const { name, address, contactPerson, phone, email, coordinates, assignedTo } = req.body;
+
+    // Validate required fields
+    if (!name || !address || !contactPerson || !phone || !email || !coordinates || !assignedTo) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    // Check if assigned user exists and is BD role
+    const assignedUser = await User.findById(assignedTo);
+    if (!assignedUser || assignedUser.role !== 'BD') {
+      return res.status(400).json({
+        success: false,
+        message: 'Assigned user must be a BD role user'
+      });
+    }
+
+    const newOperator = new Operator({
+      name,
+      address,
+      contactPerson,
+      phone,
+      email,
+      coordinates,
+      assignedTo
+    });
+
+    await newOperator.save();
+    await newOperator.populate('assignedTo', 'email role');
+
+    res.status(201).json({
+      success: true,
+      message: 'Operator created successfully',
+      data: newOperator
+    });
+  } catch (error) {
+    console.error('Error creating operator:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create operator',
+      error: error.message
+    });
+  }
+};
+
+// Delete operator (for admin)
+exports.deleteOperator = async (req, res) => {
+  try {
+    const { operatorId } = req.params;
+
+    const operator = await Operator.findById(operatorId);
+    if (!operator) {
+      return res.status(404).json({
+        success: false,
+        message: 'Operator not found'
+      });
+    }
+
+    // Delete associated check-ins
+    await CheckIn.deleteMany({ operatorId: operatorId });
+
+    // Delete the operator
+    await Operator.findByIdAndDelete(operatorId);
+
+    res.json({
+      success: true,
+      message: 'Operator deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting operator:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete operator',
+      error: error.message
+    });
+  }
+};

@@ -32,11 +32,16 @@ export const AuthProvider = ({ children }) => {
         throw new Error(errorData.error || 'Login failed');
       }
       const data = await response.json();
+      console.log('Login response:', data);
+      
       setCurrentUser(data.user);
       localStorage.setItem('spoorsUser', JSON.stringify(data.user));
       localStorage.setItem('spoorsToken', data.token);
+      
+      console.log('Token stored:', localStorage.getItem('spoorsToken'));
       return data.user;
     } catch (err) {
+      console.error('Login error:', err);
       throw err;
     }
   };

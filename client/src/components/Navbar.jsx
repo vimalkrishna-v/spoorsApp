@@ -25,10 +25,8 @@ import {
   DirectionsBus,
   People,
   AssignmentInd,
-  Assessment,
   Menu as MenuIcon,
   History,
-  CheckCircle,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -47,15 +45,13 @@ const Navbar = () => {
   const adminNavItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/admin/dashboard' },
     { text: 'Bus Operators', icon: <DirectionsBus />, path: '/admin/bus-operators' },
-    { text: 'BD Executives', icon: <People />, path: '/admin/executives' },
+    { text: 'BD Users', icon: <People />, path: '/admin/bd-users' },
     { text: 'Assignments', icon: <AssignmentInd />, path: '/admin/assignments' },
-    { text: 'Reports', icon: <Assessment />, path: '/admin/reports' },
   ];
 
   const bdNavItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/bd/dashboard' },
     { text: 'My Operators', icon: <DirectionsBus />, path: '/bd/operators' },
-    { text: 'Check-in', icon: <CheckCircle />, path: '/bd/checkin' },
     { text: 'History', icon: <History />, path: '/bd/history' },
   ];
 

@@ -33,7 +33,7 @@ import {
   AccessTime,
   Person
 } from '@mui/icons-material';
-import Navbar from '../../components/Navbar';
+import Navbar from '../components/Navbar';
 import operatorApiService from '../../services/operatorApiService';
 import { checkInApiService, locationUtils } from '../../services/checkInApiService';
 
@@ -102,27 +102,10 @@ const MyOperators = () => {
   const startLocationTracking = useCallback(() => {
     if (!activeCheckIn || locationCheckIntervalRef.current) return;
 
-    console.log('🚀 Starting periodic location tracking for check-in:', {
-      checkInId: activeCheckIn.checkInId,
-      operator: activeCheckIn.operator.name,
-      interval: '5 minutes'
-    });
-
     const interval = setInterval(async () => {
       try {
-        console.log('📍 CLIENT: Getting current location for periodic update...');
         const location = await locationUtils.getCurrentPosition();
         setCurrentLocation(location);
-        
-        console.log('📤 CLIENT: Sending location update to server:', {
-          checkInId: activeCheckIn.checkInId,
-          location: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-            accuracy: location.accuracy
-          },
-          timestamp: new Date().toISOString()
-        });
         
         // Send location update to server
         const response = await checkInApiService.updateLocation(activeCheckIn.checkInId, {
@@ -130,19 +113,14 @@ const MyOperators = () => {
           longitude: location.longitude
         });
 
-        console.log('📥 CLIENT: Received response from server:', response);
-
         // Check if auto-checked out
         if (response.autoCheckout) {
-          console.log('🚨 CLIENT: Auto-checkout triggered by server');
           setActiveCheckIn(null);
           stopLocationTracking();
           showSnackbar(response.message, 'warning');
-        } else {
-          console.log('✅ CLIENT: Location update successful, continuing tracking');
         }
       } catch (error) {
-        console.error('❌ CLIENT: Location tracking error:', error);
+        console.error('Location tracking error:', error);
         showSnackbar('Location tracking failed', 'warning');
       }
     }, 5 * 60 * 1000); // 5 minutes
