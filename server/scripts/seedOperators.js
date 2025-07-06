@@ -49,7 +49,7 @@ const operatorsData = [
     phone: '+1-555-0456',
     email: 'emily@metrotransit.com',
     status: 'active',
-    coordinates: { lat: 40.7589, lng: -73.9851 },
+    coordinates: { lat: 13.332691, lng: 74.760635 },
     subOperators: [
       {
         id: 3,
@@ -59,7 +59,7 @@ const operatorsData = [
         driver: 'Alex Wilson',
         contact: '+1-555-0457',
         status: 'active',
-        coordinates: { lat: 40.7589, lng: -73.9851 }
+    coordinates: { lat: 13.332691, lng: 74.760635 },
       },
       {
         id: 4,
@@ -69,7 +69,7 @@ const operatorsData = [
         driver: 'Lisa Chen',
         contact: '+1-555-0458',
         status: 'maintenance',
-        coordinates: { lat: 40.6413, lng: -73.7781 }
+    coordinates: { lat: 13.332691, lng: 74.760635 },
       }
     ]
   },
@@ -111,7 +111,7 @@ const operatorsData = [
     phone: '+1-555-0321',
     email: 'jennifer@suburbanlines.com',
     status: 'active',
-    coordinates: { lat: 40.8176, lng: -73.9482 },
+    coordinates: { lat: 13.332691, lng: 74.760635 },
     subOperators: [
       {
         id: 7,
@@ -121,7 +121,7 @@ const operatorsData = [
         driver: 'Robert Taylor',
         contact: '+1-555-0322',
         status: 'active',
-        coordinates: { lat: 40.8176, lng: -73.9482 }
+    coordinates: { lat: 13.332691, lng: 74.760635 },
       },
       {
         id: 8,
@@ -131,7 +131,7 @@ const operatorsData = [
         driver: 'Amanda Lee',
         contact: '+1-555-0323',
         status: 'inactive',
-        coordinates: { lat: 40.9176, lng: -73.7004 }
+    coordinates: { lat: 13.332691, lng: 74.760635 },
       }
     ]
   },

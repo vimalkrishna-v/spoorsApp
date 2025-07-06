@@ -1,138 +1,46 @@
-// Backend API service for operators
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// operatorApiService.js
+const BASE_URL = 'http://localhost:5000/api/operators';
 
-class OperatorApiService {
-  constructor() {
-    this.baseURL = API_BASE_URL;
-  }
+const getToken = () => {
+  return localStorage.getItem('spoorsToken'); // Use the same key as AuthContext
+};
 
-  // Get authentication token from localStorage
-  getToken() {
-    return localStorage.getItem('token');
-  }
+const request = async (url, options = {}) => {
+  const token = getToken();
+  if (!token) throw new Error('Access token is required');
 
-  // Create request headers with authentication
-  getHeaders() {
-    const token = this.getToken();
-    return {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
-    };
-  }
-
-  // Generic API request method
-  async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const config = {
-      headers: this.getHeaders(),
-      ...options
-    };
-
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('API request error:', error);
-      throw error;
+      'Authorization': `Bearer ${token}`,
+      ...(options.headers || {})
     }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'API request failed');
   }
 
-  // Get all operators assigned to the current BD user
-  async getAssignedOperators() {
-    try {
-      const response = await this.request('/operators');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching assigned operators:', error);
-      throw error;
-    }
-  }
+  const data = await response.json();
+  // Always return an array for assignedOperators
+  return data.data || data;
+};
 
-  // Get operator details by ID
-  async getOperatorById(operatorId) {
-    try {
-      const response = await this.request(`/operators/${operatorId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching operator details:', error);
-      throw error;
-    }
-  }
+const operatorApiService = {
+  getAssignedOperators: () => request(`${BASE_URL}`),
+  checkIn: (operatorId, location) =>
+    request(`${BASE_URL}/${operatorId}/checkin`, {
+      method: 'POST',
+      body: JSON.stringify({ location })
+    }),
+  checkOut: (operatorId, location, notes) =>
+    request(`${BASE_URL}/${operatorId}/checkout`, {
+      method: 'POST',
+      body: JSON.stringify({ location, notes })
+    }),
+  getCheckInStatus: () => request(`${BASE_URL}/checkins/status`)
+};
 
-  // Check in to an operator
-  async checkIn(operatorId, location) {
-    try {
-      const response = await this.request(`/operators/${operatorId}/checkin`, {
-        method: 'POST',
-        body: JSON.stringify({ location })
-      });
-      return response;
-    } catch (error) {
-      console.error('Error during check-in:', error);
-      throw error;
-    }
-  }
-
-  // Check out from an operator
-  async checkOut(operatorId, location = null, notes = '') {
-    try {
-      const response = await this.request(`/operators/${operatorId}/checkout`, {
-        method: 'POST',
-        body: JSON.stringify({ location, notes })
-      });
-      return response;
-    } catch (error) {
-      console.error('Error during check-out:', error);
-      throw error;
-    }
-  }
-
-  // Get check-in history for the current BD user
-  async getCheckInHistory(page = 1, limit = 10) {
-    try {
-      const response = await this.request(`/operators/checkins/history?page=${page}&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching check-in history:', error);
-      throw error;
-    }
-  }
-
-  // Get current check-in status for all operators
-  async getCheckInStatus() {
-    try {
-      const response = await this.request('/operators/checkins/status');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching check-in status:', error);
-      throw error;
-    }
-  }
-
-  // Update operator information (admin only)
-  async updateOperator(operatorId, updates) {
-    try {
-      const response = await this.request(`/operators/${operatorId}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates)
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error updating operator:', error);
-      throw error;
-    }
-  }
-}
-
-// Create and export a singleton instance
-const operatorApiService = new OperatorApiService();
 export default operatorApiService;
-
-// Export the class for testing purposes
-export { OperatorApiService };
