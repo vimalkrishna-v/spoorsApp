@@ -5,9 +5,11 @@ import Login from '../pages/Auth/Login';
 import AdminDashboard from '../pages/Admin/AdminDashboard';
 import BdDashboard from '../pages/BD/BdDashboard';
 import MyOperators from '../pages/BD/MyOperators';
+import CheckInHistory from '../pages/BD/CheckInHistory';
 import BusOperators from '../pages/Admin/BusOperators_new';
 import BDUsersManagement from '../pages/Admin/BDUsersManagement';
 import AssignmentManagement from '../pages/Admin/AssignmentManagement';
+import CheckInManagement from '../pages/Admin/CheckInManagement';
 
 
 // Protected Route component to handle authentication checks
@@ -69,6 +71,10 @@ const AppRouter = () => {
           element={<ProtectedRoute element={<AssignmentManagement />} requiredRole="admin" />}
         />
         <Route
+          path="/admin/checkins"
+          element={<ProtectedRoute element={<CheckInManagement />} requiredRole="admin" />}
+        />
+        <Route
           path="/bd/dashboard"
           element={<ProtectedRoute element={<BdDashboard />} requiredRole="bd" />}
         />
@@ -76,6 +82,11 @@ const AppRouter = () => {
         <Route
           path="/bd/operators"
           element={<ProtectedRoute element={<MyOperators />} requiredRole="bd" />}
+        />
+
+        <Route
+          path="/bd/history"
+          element={<ProtectedRoute element={<CheckInHistory />} requiredRole="bd" />}
         />
 
         {/* Default route */}

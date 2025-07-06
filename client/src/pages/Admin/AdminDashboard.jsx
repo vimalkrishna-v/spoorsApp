@@ -111,12 +111,34 @@ const AdminDashboard = () => {
             <Grid item xs={12} md={6}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardHeader 
+                  title="Check-In Management" 
+                  titleTypographyProps={{ variant: 'h6' }}
+                />
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="body1" color="textSecondary" paragraph>
+                    Monitor BD user check-ins, location tracking, and session analytics.
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={() => navigate('/admin/checkins')}
+                    sx={{ mt: 'auto' }}
+                  >
+                    Manage Check-Ins
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardHeader 
                   title="Reports & Analytics" 
                   titleTypographyProps={{ variant: 'h6' }}
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="body1" color="textSecondary" paragraph>
-                    View reports of all check-ins and system analytics.
+                    View comprehensive reports and system analytics.
                   </Typography>
                   <Button 
                     variant="contained" 

@@ -120,4 +120,32 @@ export const adminOperatorApiService = {
   }
 };
 
+// Admin Check-in management API calls
+export const adminCheckInApiService = {
+  // Get all check-ins with filtering
+  getAllCheckIns: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) {
+        params.append(key, filters[key]);
+      }
+    });
+    
+    const response = await api.get(`/checkins/admin/all?${params.toString()}`);
+    return response.data;
+  },
+
+  // Get check-in analytics
+  getAnalytics: async (days = 30) => {
+    const response = await api.get(`/checkins/admin/analytics?days=${days}`);
+    return response.data;
+  },
+
+  // Get detailed check-in information (admin version)
+  getCheckInDetails: async (checkInId) => {
+    const response = await api.get(`/checkins/admin/details/${checkInId}`);
+    return response.data;
+  }
+};
+
 export default api;

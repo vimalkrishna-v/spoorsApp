@@ -42,7 +42,7 @@ server/
 │   ├── dashboard.js        # Dashboard routes
 │   └── api.js              # General API routes
 ├── scripts/
-│   └── seedUsers.js        # Database seeding script
+│   └── checkUsers.js       # User verification script
 ├── utils/
 │   └── tokenUtils.js       # JWT utility functions
 ├── .env                    # Environment variables
@@ -75,12 +75,7 @@ server/
 
 4. **Start MongoDB** (make sure MongoDB is running on your system)
 
-5. **Seed the database with sample users**:
-   ```bash
-   npm run seed
-   ```
-
-6. **Start the server**:
+5. **Start the server**:
    ```bash
    # Development mode with auto-restart
    npm run dev

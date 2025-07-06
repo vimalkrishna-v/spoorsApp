@@ -6,6 +6,7 @@ const authRoutes = require('./auth');
 const operatorRoutes = require('./operators');
 const userRoutes = require('./users');
 const dashboardRoutes = require('./dashboard');
+const checkInRoutes = require('./checkins');
 
 // Sample route
 router.get('/', (req, res) => {
@@ -20,5 +21,6 @@ router.use('/auth', authRoutes);
 router.use('/operators', operatorRoutes);
 router.use('/users', userRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/checkins', checkInRoutes);
 
 module.exports = router;

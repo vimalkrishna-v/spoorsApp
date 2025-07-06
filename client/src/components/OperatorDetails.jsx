@@ -30,12 +30,11 @@ import {
   Cancel,
   Navigation
 } from '@mui/icons-material';
-import { getOperatorCoordinates } from '../data/operatorData';
 
 const OperatorDetails = ({ open, onClose, operator, subOperators }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Dummy coordinates for demonstration - in real app, these would come from backend
+  // Default coordinates - in real app, these would come from backend
   const getOperatorCoordinates = (operatorId) => {
     const coordinates = {
       1: { lat: 40.7128, lng: -74.0060 }, // New York City
