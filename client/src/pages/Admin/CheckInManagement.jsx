@@ -171,17 +171,17 @@ const AdminCheckInManagement = () => {
   };
 
   const AnalyticsCard = ({ title, value, subtitle, icon, color = 'primary' }) => (
-    <Card>
+    <Card sx={{ width: '100%' }}>
       <CardContent>
         <Box display="flex" alignItems="center">
-          <Avatar sx={{ bgcolor: `${color}.main`, mr: 2 }}>
-            {icon}
+          <Avatar sx={{ bgcolor: `${color}.main`, mr: 2, width: 32, height: 32, height: 32 }}>
+            {React.cloneElement(icon, { fontSize: 'small' })}
           </Avatar>
           <Box>
-            <Typography variant="h4" component="div">
+            <Typography variant="h5" component="div">
               {value}
             </Typography>
-            <Typography variant="h6" color="text.primary">
+            <Typography variant="subtitle1" color="text.primary">
               {title}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -385,9 +385,9 @@ const AdminCheckInManagement = () => {
 
           {/* Analytics Tab */}
           {tabValue === 1 && analytics && (
-            <Box>
-              <Grid container spacing={3} mb={3}>
-                <Grid item xs={12} md={3}>
+            <Box width="100%">
+              <Box display="flex" width="100%" gap={3} mb={3}>
+                <Box flex={1}>
                   <AnalyticsCard
                     title="Total Sessions"
                     value={analytics.bdPerformance?.length || 0}
@@ -395,8 +395,8 @@ const AdminCheckInManagement = () => {
                     icon={<Assessment />}
                     color="primary"
                   />
-                </Grid>
-                <Grid item xs={12} md={3}>
+                </Box>
+                <Box flex={1}>
                   <AnalyticsCard
                     title="Completed Sessions"
                     value={analytics.bdPerformance?.reduce((sum, bd) => sum + bd.completedSessions, 0) || 0}
@@ -404,8 +404,8 @@ const AdminCheckInManagement = () => {
                     icon={<CheckCircle />}
                     color="success"
                   />
-                </Grid>
-                <Grid item xs={12} md={3}>
+                </Box>
+                <Box flex={1}>
                   <AnalyticsCard
                     title="Auto-Checkouts"
                     value={analytics.bdPerformance?.reduce((sum, bd) => sum + bd.autoCheckouts, 0) || 0}
@@ -413,8 +413,8 @@ const AdminCheckInManagement = () => {
                     icon={<Warning />}
                     color="warning"
                   />
-                </Grid>
-                <Grid item xs={12} md={3}>
+                </Box>
+                <Box flex={1}>
                   <AnalyticsCard
                     title="Avg Duration"
                     value={`${Math.round(analytics.bdPerformance?.reduce((sum, bd) => sum + bd.averageDuration, 0) / analytics.bdPerformance?.length || 0)}m`}
@@ -422,11 +422,12 @@ const AdminCheckInManagement = () => {
                     icon={<AccessTime />}
                     color="info"
                   />
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
 
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
+              {/* Next row: 2-in-a-row, full width */}
+              <Box display="flex" width="100%" gap={3} mb={3}>
+                <Box flex={2}>
                   <Card>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -464,9 +465,8 @@ const AdminCheckInManagement = () => {
                       </TableContainer>
                     </CardContent>
                   </Card>
-                </Grid>
-
-                <Grid item xs={12} md={4}>
+                </Box>
+                <Box flex={1}>
                   <Card>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -487,8 +487,8 @@ const AdminCheckInManagement = () => {
                       </List>
                     </CardContent>
                   </Card>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </Box>
           )}
         </Box>
@@ -546,7 +546,7 @@ const AdminCheckInManagement = () => {
                     <ListItemText
                       primary="Check-In Distance"
                       secondary={`${selectedCheckIn.checkInLocation?.distanceFromOperator || 'N/A'}m from operator`}
-                    />
+                      />
                   </ListItem>
 
                   {selectedCheckIn.sessionStats && (

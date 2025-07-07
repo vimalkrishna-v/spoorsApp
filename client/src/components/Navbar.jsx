@@ -47,6 +47,7 @@ const Navbar = () => {
     { text: 'Bus Operators', icon: <DirectionsBus />, path: '/admin/bus-operators' },
     { text: 'BD Users', icon: <People />, path: '/admin/bd-users' },
     { text: 'Assignments', icon: <AssignmentInd />, path: '/admin/assignments' },
+    { text: 'Checkins', icon: <History />, path: '/admin/checkins' },
   ];
 
   const bdNavItems = [
