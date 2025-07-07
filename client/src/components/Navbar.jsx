@@ -56,7 +56,7 @@ const Navbar = () => {
   ];
 
   // Choose navigation items based on user role
-  const navItems = currentUser?.role === 'admin' ? adminNavItems : bdNavItems;
+  const navItems = currentUser?.role === 'Admin' ? adminNavItems : bdNavItems;
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -73,7 +73,7 @@ const Navbar = () => {
   };
 
   const handleProfile = () => {
-    const profilePath = currentUser?.role === 'admin' ? '/admin/profile' : '/bd/profile';
+    const profilePath = currentUser?.role === 'Admin' ? '/admin/profile' : '/bd/profile';
     navigate(profilePath);
     handleClose();
   };
@@ -103,7 +103,7 @@ const Navbar = () => {
         </Avatar>
         <Typography variant="subtitle1">{currentUser?.name || currentUser?.email}</Typography>
         <Typography variant="body2" color="text.secondary">
-          {currentUser?.role === 'admin' ? 'Administrator' : 'BD Executive'}
+          {currentUser?.role === 'Admin' ? 'Administrator' : 'BD Executive'}
         </Typography>
       </Box>
 
@@ -138,8 +138,8 @@ const Navbar = () => {
         <ListItem
           button
           component={Link}
-          to={currentUser?.role === 'admin' ? '/admin/profile' : '/bd/profile'}
-          selected={isActive(currentUser?.role === 'admin' ? '/admin/profile' : '/bd/profile')}
+          to={currentUser?.role === 'Admin' ? '/admin/profile' : '/bd/profile'}
+          selected={isActive(currentUser?.role === 'Admin' ? '/admin/profile' : '/bd/profile')}
         >
           <ListItemIcon>
             <AccountCircle />

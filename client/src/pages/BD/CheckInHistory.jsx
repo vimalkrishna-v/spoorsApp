@@ -176,10 +176,10 @@ const CheckInHistory = () => {
                         
                         <Box flexGrow={1}>
                           <Typography variant="h6" component="h3">
-                            {checkIn.operatorId.name}
+                            {checkIn.operatorId ? checkIn.operatorId.name : 'Unknown Operator'}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {checkIn.operatorId.address}
+                            {checkIn.operatorId ? checkIn.operatorId.address : ''}
                           </Typography>
                           
                           <Box display="flex" alignItems="center" gap={2} mt={1}>
@@ -251,10 +251,10 @@ const CheckInHistory = () => {
             {selectedCheckIn && (
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  {selectedCheckIn.operatorId.name}
+                  {selectedCheckIn.operatorId && selectedCheckIn.operatorId.name ? selectedCheckIn.operatorId.name : (selectedCheckIn.operator && selectedCheckIn.operator.name ? selectedCheckIn.operator.name : 'Unknown Operator')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  {selectedCheckIn.operatorId.address}
+                  {selectedCheckIn.operatorId && selectedCheckIn.operatorId.address ? selectedCheckIn.operatorId.address : (selectedCheckIn.operator && selectedCheckIn.operator.address ? selectedCheckIn.operator.address : '')}
                 </Typography>
 
                 <Divider sx={{ my: 2 }} />
@@ -266,7 +266,7 @@ const CheckInHistory = () => {
                     </ListItemIcon>
                     <ListItemText 
                       primary="Check-In Time"
-                      secondary={formatDateTime(selectedCheckIn.checkInTime)}
+                      secondary={selectedCheckIn.checkInTime ? formatDateTime(selectedCheckIn.checkInTime) : (selectedCheckIn.checkIn && selectedCheckIn.checkIn.checkInTime ? formatDateTime(selectedCheckIn.checkIn.checkInTime) : 'N/A')}
                     />
                   </ListItem>
 
@@ -277,7 +277,7 @@ const CheckInHistory = () => {
                       </ListItemIcon>
                       <ListItemText 
                         primary="Check-Out Time"
-                        secondary={formatDateTime(selectedCheckIn.checkOutTime)}
+                        secondary={selectedCheckIn.checkOutTime ? formatDateTime(selectedCheckIn.checkOutTime) : (selectedCheckIn.checkIn && selectedCheckIn.checkIn.checkOutTime ? formatDateTime(selectedCheckIn.checkIn.checkOutTime) : 'N/A')}
                       />
                     </ListItem>
                   )}
@@ -288,7 +288,9 @@ const CheckInHistory = () => {
                     </ListItemIcon>
                     <ListItemText 
                       primary="Duration"
-                      secondary={formatDuration(selectedCheckIn.checkInTime, selectedCheckIn.checkOutTime)}
+                      secondary={selectedCheckIn.checkInTime && (selectedCheckIn.checkOutTime || selectedCheckIn.status === 'checked-in')
+                        ? formatDuration(selectedCheckIn.checkInTime, selectedCheckIn.checkOutTime)
+                        : (selectedCheckIn.checkIn && selectedCheckIn.checkIn.checkInTime ? formatDuration(selectedCheckIn.checkIn.checkInTime, selectedCheckIn.checkIn.checkOutTime) : 'N/A')}
                     />
                   </ListItem>
 
@@ -298,51 +300,49 @@ const CheckInHistory = () => {
                     </ListItemIcon>
                     <ListItemText 
                       primary="Check-In Distance"
-                      secondary={`${selectedCheckIn.checkInLocation.distanceFromOperator}m from operator`}
+                      secondary={selectedCheckIn.checkInLocation && selectedCheckIn.checkInLocation.distanceFromOperator !== undefined
+                        ? `${selectedCheckIn.checkInLocation.distanceFromOperator}m from operator`
+                        : (selectedCheckIn.checkIn && selectedCheckIn.checkIn.checkInLocation && selectedCheckIn.checkIn.checkInLocation.distanceFromOperator !== undefined
+                          ? `${selectedCheckIn.checkIn.checkInLocation.distanceFromOperator}m from operator`
+                          : 'N/A')}
+                          />
+                    </ListItem>
+
+                  <ListItem disablePadding>
+                    <ListItemIcon>
+                      <LocationOn />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Location Updates"
+                      secondary={selectedCheckIn.locationTracking ? `${selectedCheckIn.locationTracking.length} location checks during session` : (selectedCheckIn.checkIn && selectedCheckIn.checkIn.locationTracking ? `${selectedCheckIn.checkIn.locationTracking.length} location checks during session` : 'N/A')}
                     />
-                  </ListItem>
-
-                  {selectedCheckIn.maxDistanceViolated && (
-                    <ListItem disablePadding>
-                      <ListItemIcon>
-                        <Warning color="warning" />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="Maximum Distance Violated"
-                        secondary={`${selectedCheckIn.maxDistanceViolated}m from operator`}
-                      />
                     </ListItem>
-                  )}
-
-                  {selectedCheckIn.locationTracking && (
-                    <ListItem disablePadding>
-                      <ListItemIcon>
-                        <LocationOn />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="Location Updates"
-                        secondary={`${selectedCheckIn.locationTracking.length} location checks during session`}
-                      />
-                    </ListItem>
-                  )}
                 </List>
 
+
+                {/* Show Notes if present */}
                 {selectedCheckIn.notes && (
-                  <>
-                    <Divider sx={{ my: 2 }} />
+                  <Box sx={{ mb: 2 }}>
                     <Typography variant="subtitle2" gutterBottom>
-                      Session Notes:
+                      Notes
                     </Typography>
                     <Typography variant="body2" sx={{ p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
                       {selectedCheckIn.notes}
                     </Typography>
-                  </>
+                  </Box>
                 )}
 
-                <Divider sx={{ my: 2 }} />
-
                 <Typography variant="caption" color="text.secondary">
-                  Status: {getStatusLabel(selectedCheckIn.status, selectedCheckIn.checkoutReason)}
+                  {/* Enhanced debug log for status and checkoutReason */}
+                  {(() => {
+                    let status = selectedCheckIn.status || (selectedCheckIn.checkIn && selectedCheckIn.checkIn.status);
+                    let checkoutReason = selectedCheckIn.checkoutReason || (selectedCheckIn.checkIn && selectedCheckIn.checkIn.checkoutReason);
+                    console.log('DEBUG selectedCheckIn.status:', status, typeof status, '| selectedCheckIn.checkoutReason:', checkoutReason, typeof checkoutReason, '| selectedCheckIn:', selectedCheckIn);
+                    // Normalize values for matching
+                    if (typeof status === 'string') status = status.trim().toLowerCase();
+                    if (typeof checkoutReason === 'string') checkoutReason = checkoutReason.trim().toLowerCase();
+                    return `Status: ${getStatusLabel(status, checkoutReason)}`;
+                  })()}
                 </Typography>
               </Box>
             )}

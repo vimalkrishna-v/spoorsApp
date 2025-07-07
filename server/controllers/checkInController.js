@@ -846,7 +846,7 @@ exports.getCheckInDetails = async (req, res) => {
       userId: userId
     })
     .populate('userId', 'name email')
-    .populate('operatorId', 'name location coordinates contactInfo');
+    .populate('operatorId', 'name address location coordinates contactInfo');
 
     if (!checkIn) {
       console.log('BD getCheckInDetails - Check-in not found for user:', { checkInId, userId });
@@ -866,33 +866,33 @@ exports.getCheckInDetails = async (req, res) => {
     const complianceRate = totalLocationChecks > 0 ? 
       Math.round(((totalLocationChecks - violationChecks) / totalLocationChecks) * 100) : 100;
 
-    const response = {
+    // Flattened response for frontend compatibility
+    res.json({
       success: true,
       data: {
-        checkIn: {
-          _id: checkIn._id,
-          status: checkIn.status,
-          checkInTime: checkIn.checkInTime,
-          checkOutTime: checkIn.checkOutTime,
-          checkInLocation: checkIn.checkInLocation,
-          checkOutLocation: checkIn.checkOutLocation,
-          checkInNotes: checkIn.checkInNotes,
-          checkOutNotes: checkIn.checkOutNotes,
-          checkoutReason: checkIn.checkoutReason,
-          maxDistanceViolated: checkIn.maxDistanceViolated
-        },
-        user: checkIn.userId,
-        operator: checkIn.operatorId,
+        _id: checkIn._id,
+        status: checkIn.status,
+        checkInTime: checkIn.checkInTime,
+        checkOutTime: checkIn.checkOutTime,
+        checkInLocation: checkIn.checkInLocation,
+        checkOutLocation: checkIn.checkOutLocation,
+        checkInNotes: checkIn.checkInNotes,
+        checkOutNotes: checkIn.checkOutNotes,
+        checkoutReason: checkIn.checkoutReason,
+        maxDistanceViolated: checkIn.maxDistanceViolated,
+        userId: checkIn.userId, // populated
+        operatorId: checkIn.operatorId, // populated with name/address
+        locationTracking: checkIn.locationTracking,
+        notes: checkIn.notes,
         sessionMetrics: {
           duration: sessionDuration,
           totalLocationChecks,
           violationChecks,
           complianceRate,
           status: checkIn.status
-        },
-        locationTracking: checkIn.locationTracking
+        }
       }
-    };
+    });
 
     console.log('BD getCheckInDetails - Success:', {
       checkInId,
@@ -900,8 +900,6 @@ exports.getCheckInDetails = async (req, res) => {
       duration: sessionDuration,
       complianceRate
     });
-
-    res.json(response);
   } catch (error) {
     console.error('Error getting check-in details:', error);
     res.status(500).json({

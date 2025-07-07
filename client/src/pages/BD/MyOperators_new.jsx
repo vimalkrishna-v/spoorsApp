@@ -292,6 +292,11 @@ const MyOperators = () => {
     }
   };
 
+  const displayStatus = (status) => {
+    if (!status) return '';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   if (loading) {
     return (
       <>
@@ -386,8 +391,8 @@ const MyOperators = () => {
                           <Typography variant="h6" component="h2">
                             {operator.name}
                           </Typography>
-                          <Chip 
-                            label={operator.status}
+                          <Chip
+                            label={displayStatus(operator.status)}
                             color={getOperatorStatusColor(operator.status)}
                             size="small"
                           />

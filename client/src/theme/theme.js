@@ -4,19 +4,28 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#dabcff', // Light purple shade
-      contrastText: '#000000', // Black text for better contrast on light purple
+      main: '#6c5ce7', // Changed to darker purple
+      contrastText: '#ffffff', // White text for better contrast
     },
     secondary: {
-      main: '#6c5ce7', // A complementary darker purple
+      main: '#6c5ce7',
     },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         containedPrimary: {
+          color: '#fff', // Ensure white text on primary buttons
+          backgroundColor: '#6c5ce7',
           '&:hover': {
-            backgroundColor: '#c9abee', // Slightly darker shade for hover state
+            backgroundColor: '#5a4bcf', // Uniform hover color for all contained primary buttons
+          },
+        },
+        containedSecondary: {
+          color: '#fff',
+          backgroundColor: '#6c5ce7',
+          '&:hover': {
+            backgroundColor: '#5a4bcf', // Uniform hover color for all contained secondary buttons
           },
         },
       },
