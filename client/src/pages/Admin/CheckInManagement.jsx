@@ -93,6 +93,7 @@ const AdminCheckInManagement = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [analytics, setAnalytics] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -114,6 +115,18 @@ const AdminCheckInManagement = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    async function fetchAnalytics() {
+      try {
+        const response = await adminCheckInApiService.getAnalytics(30);
+        setAnalytics(response.data);
+      } catch (error) {
+        setAnalytics(null);
+      }
+    }
+    fetchAnalytics();
+  }, []);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -138,7 +151,7 @@ const AdminCheckInManagement = () => {
       <Container maxWidth="lg">
         <Box my={4}>
           {/* Filters and Actions */}
-          <Card>
+          <Card sx={{ boxShadow: 3 }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" mb={2}>
                 <Typography variant="h6">Check-In Management</Typography>
@@ -220,8 +233,12 @@ const AdminCheckInManagement = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {checkIns.map((checkIn) => (
-                        <TableRow key={checkIn._id}>
+                      {checkIns.map((checkIn, idx) => (
+                        <TableRow
+                          key={checkIn._id}
+                          hover
+                          sx={{ backgroundColor: idx % 2 === 0 ? 'grey.50' : 'white' }}
+                        >
                           <TableCell>
                             <Box display="flex" alignItems="center">
                               <Avatar sx={{ bgcolor: 'primary.main', mr: 1, width: 32, height: 32 }}>
@@ -341,7 +358,11 @@ const AdminCheckInManagement = () => {
                       <ListItemIcon><LocationOn /></ListItemIcon>
                       <ListItemText
                         primary="Check-In Distance"
-                        secondary={`${selectedCheckIn.checkInLocation?.distanceFromOperator || 'N/A'}m from operator`}
+                        secondary={
+                          typeof selectedCheckIn.checkInLocation?.distanceFromOperator === 'number' && !isNaN(selectedCheckIn.checkInLocation.distanceFromOperator)
+                            ? `${selectedCheckIn.checkInLocation.distanceFromOperator}m from operator`
+                            : 'Not Available'
+                        }
                       />
                     </ListItem>
 
@@ -384,6 +405,8 @@ const AdminCheckInManagement = () => {
               <Button onClick={() => setShowDetails(false)}>Close</Button>
             </DialogActions>
           </Dialog>
+
+
         </Box>
       </Container>
     </>

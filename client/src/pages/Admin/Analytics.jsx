@@ -26,7 +26,7 @@ import Navbar from '../../components/Navbar';
 import { adminCheckInApiService } from '../../services/adminApiService';
 
 const AnalyticsCard = ({ title, value, subtitle, icon, color = 'primary' }) => (
-  <Card sx={{ width: '100%' }}>
+  <Card sx={{ width: '100%', boxShadow: 3 }}>
     <CardContent>
       <Box display="flex" alignItems="center">
         <Avatar sx={{ bgcolor: `${color}.main`, mr: 2, width: 32, height: 32 }}>
@@ -75,8 +75,8 @@ const Analytics = () => {
       <Navbar />
       <Container maxWidth="xl">
         <Box sx={{ my: 4 }}>
-          <Typography variant="h4" component="h1" mb={3}>
-            Analytics
+          <Typography variant="h4" component="h1" mb={3} sx={{ fontWeight: 700, letterSpacing: 1 }}>
+            Analytics Dashboard
           </Typography>
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
@@ -90,8 +90,9 @@ const Analytics = () => {
           ) : (
             analytics && (
               <Box width="100%">
-                <Box display="flex" width="100%" gap={3} mb={3}>
-                  <Box flex={1}>
+                {/* Summary Cards */}
+                <Box display="flex" width="100%" gap={3} mb={4} flexWrap="wrap">
+                  <Box flex={1} minWidth={220}>
                     <AnalyticsCard
                       title="Total Sessions"
                       value={analytics.bdPerformance?.length || 0}
@@ -100,7 +101,7 @@ const Analytics = () => {
                       color="primary"
                     />
                   </Box>
-                  <Box flex={1}>
+                  <Box flex={1} minWidth={220}>
                     <AnalyticsCard
                       title="Completed Sessions"
                       value={analytics.bdPerformance?.reduce((sum, bd) => sum + bd.completedSessions, 0) || 0}
@@ -109,7 +110,7 @@ const Analytics = () => {
                       color="success"
                     />
                   </Box>
-                  <Box flex={1}>
+                  <Box flex={1} minWidth={220}>
                     <AnalyticsCard
                       title="Auto-Checkouts"
                       value={analytics.bdPerformance?.reduce((sum, bd) => sum + bd.autoCheckouts, 0) || 0}
@@ -118,53 +119,50 @@ const Analytics = () => {
                       color="warning"
                     />
                   </Box>
-                  <Box flex={1}>
+                  <Box flex={1} minWidth={220}>
                     <AnalyticsCard
                       title="Avg Duration"
-                      value={`${Math.round(analytics.bdPerformance?.reduce((sum, bd) => sum + bd.averageDuration, 0) / analytics.bdPerformance?.length || 0)}m`}
+                      value={`${Math.round(analytics.bdPerformance?.reduce((sum, bd) => sum + bd.averageDuration, 0) / (analytics.bdPerformance?.length || 1))}m`}
                       subtitle="Per session"
                       icon={<AccessTime />}
                       color="info"
                     />
                   </Box>
                 </Box>
-                <Box display="flex" width="100%" gap={3} mb={3}>
-                  <Box flex={2}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="h6" gutterBottom>
-                          BD User Performance
-                        </Typography>
-                        <TableContainer>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>BD User</TableCell>
-                                <TableCell align="right">Sessions</TableCell>
-                                <TableCell align="right">Completed</TableCell>
-                                <TableCell align="right">Violations</TableCell>
-                                <TableCell align="right">Completion Rate</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {analytics.bdPerformance?.slice(0, 10).map((bd) => (
-                                <TableRow key={bd._id}>
-                                  <TableCell>{bd.email || 'N/A'}</TableCell>
-                                  <TableCell align="right">{bd.totalSessions || 0}</TableCell>
-                                  <TableCell align="right">{bd.completedSessions || 0}</TableCell>
-                                  <TableCell align="right">{bd.autoCheckouts || 0}</TableCell>
-                                  <TableCell align="right">
-                                    {bd.totalSessions ? `${Math.round((bd.completedSessions / bd.totalSessions) * 100)}%` : 'N/A'}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </CardContent>
-                    </Card>
-                  </Box>
-                </Box>
+                {/* BD User Performance Table */}
+                <Card sx={{ boxShadow: 3 }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                      Top 10 BD User Performance
+                    </Typography>
+                    <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow sx={{ backgroundColor: 'grey.100' }}>
+                            <TableCell sx={{ fontWeight: 600 }}>BD User</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>Sessions</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>Completed</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>Violations</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>Completion Rate</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {analytics.bdPerformance?.slice(0, 10).map((bd) => (
+                            <TableRow key={bd._id} hover>
+                              <TableCell>{bd.email || 'N/A'}</TableCell>
+                              <TableCell align="right">{bd.totalSessions || 0}</TableCell>
+                              <TableCell align="right">{bd.completedSessions || 0}</TableCell>
+                              <TableCell align="right">{bd.autoCheckouts || 0}</TableCell>
+                              <TableCell align="right">
+                                {bd.totalSessions ? `${Math.round((bd.completedSessions / bd.totalSessions) * 100)}%` : 'N/A'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
               </Box>
             )
           )}
@@ -175,4 +173,3 @@ const Analytics = () => {
 };
 
 export default Analytics;
-
