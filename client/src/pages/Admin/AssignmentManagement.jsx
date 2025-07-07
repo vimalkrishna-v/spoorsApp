@@ -24,14 +24,12 @@ import {
   Container,
   Card,
   CardContent,
-  CardHeader,
-  Checkbox,
-  ListItemText,
+  Paper,
   OutlinedInput,
-  Paper
+  Checkbox,
+  ListItemText
 } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import { userApiService, adminOperatorApiService } from '../../services/adminApiService';
@@ -159,11 +157,27 @@ const AssignmentManagement = () => {
       <Container maxWidth="lg">
         <Box my={4}>
           <Card>
-            <CardHeader
-              avatar={<AssignmentIcon color="primary" />}
-              title="Operator Assignments"
-              subheader="Assign bus operators to BD Executives."
-            />
+            <Box display="flex" alignItems="center" justifyContent="space-between" px={3} pt={2}>
+              <Box display="flex" alignItems="center" gap={1}>
+{/*                 <AssignmentIcon color="primary" /> */}
+                <Box>
+                  <Typography variant="h6" component="div">
+                    Operator Assignments
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Assign bus operators to BD Executives.
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenDialog(true)}
+                startIcon={<AssignmentIcon />}
+              >
+                Assign Operators
+              </Button>
+            </Box>
             <CardContent>
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
               {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
@@ -172,46 +186,34 @@ const AssignmentManagement = () => {
                   <CircularProgress />
                 </Box>
               ) : (
-                <>
-                  <Box mb={3}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => setOpenDialog(true)}
-                      startIcon={<AssignmentIcon />}
-                    >
-                      Assign Operators
-                    </Button>
-                  </Box>
-                  <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell>BD Executive</TableCell>
-                          <TableCell>Assigned Operators</TableCell>
+                <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell>BD Executive</TableCell>
+                        <TableCell>Assigned Operators</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {bdUsers.map((user, idx) => (
+                        <TableRow key={user._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
+                          <TableCell sx={{ fontWeight: 500 }}>{user.email}</TableCell>
+                          <TableCell>
+                            {assignments[user._id]?.length ? (
+                              <Box display="flex" flexWrap="wrap" gap={1}>
+                                {assignments[user._id].map((op) => (
+                                  <Chip key={op._id} label={op.name} color="primary" variant="outlined" />
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">No operators assigned</Typography>
+                            )}
+                          </TableCell>
                         </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {bdUsers.map((user, idx) => (
-                          <TableRow key={user._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
-                            <TableCell sx={{ fontWeight: 500 }}>{user.email}</TableCell>
-                            <TableCell>
-                              {assignments[user._id]?.length ? (
-                                <Box display="flex" flexWrap="wrap" gap={1}>
-                                  {assignments[user._id].map((op) => (
-                                    <Chip key={op._id} label={op.name} color="primary" variant="outlined" />
-                                  ))}
-                                </Box>
-                              ) : (
-                                <Typography variant="body2" color="text.secondary">No operators assigned</Typography>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               )}
             </CardContent>
           </Card>

@@ -168,10 +168,24 @@ const BDUsersManagement = () => {
       <Container maxWidth="lg">
         <Box my={4}>
           <Card>
-            <CardHeader
-              title="BD Executives Management"
-              subheader="Manage BD Executives and their details."
-            />
+            <Box display="flex" flexDirection="column" px={3} pt={2}>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Typography variant="h6" component="div">
+                  BD Executives Management
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => { setEditingUser(null); setFormData({ email: '', password: '', isActive: true }); setOpenDialog(true); }}
+                >
+                  Add BD Executive
+                </Button>
+              </Box>
+              <Typography variant="body2" color="text.secondary" mt={0.5}>
+                Manage BD Executives and their details.
+              </Typography>
+            </Box>
             <CardContent>
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
               {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
@@ -180,51 +194,39 @@ const BDUsersManagement = () => {
                   <CircularProgress />
                 </Box>
               ) : (
-                <>
-                  <Box mb={3} display="flex" justifyContent="flex-end">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<AddIcon />}
-                      onClick={() => { setEditingUser(null); setFormData({ email: '', password: '', isActive: true }); setOpenDialog(true); }}
-                    >
-                      Add BD Executive
-                    </Button>
-                  </Box>
-                  <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell>Email</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Last Login</TableCell>
-                          <TableCell>Created At</TableCell>
-                          <TableCell>Actions</TableCell>
+                <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Last Login</TableCell>
+                        <TableCell>Created At</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {users.map((user, idx) => (
+                        <TableRow key={user._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
+                          <TableCell sx={{ fontWeight: 500 }}>{user.email}</TableCell>
+                          <TableCell>
+                            <Chip label={user.isActive ? 'Active' : 'Inactive'} color={user.isActive ? 'success' : 'default'} size="small" />
+                          </TableCell>
+                          <TableCell>{user.lastLogin ? formatDate(user.lastLogin) : '-'}</TableCell>
+                          <TableCell>{user.createdAt ? formatDate(user.createdAt) : '-'}</TableCell>
+                          <TableCell>
+                            <IconButton color="primary" onClick={() => { setEditingUser(user); setFormData({ email: user.email, password: '', isActive: user.isActive }); setOpenDialog(true); }}>
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton color="error" onClick={() => handleDelete(user._id)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
                         </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {users.map((user, idx) => (
-                          <TableRow key={user._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
-                            <TableCell sx={{ fontWeight: 500 }}>{user.email}</TableCell>
-                            <TableCell>
-                              <Chip label={user.isActive ? 'Active' : 'Inactive'} color={user.isActive ? 'success' : 'default'} size="small" />
-                            </TableCell>
-                            <TableCell>{user.lastLogin ? formatDate(user.lastLogin) : '-'}</TableCell>
-                            <TableCell>{user.createdAt ? formatDate(user.createdAt) : '-'}</TableCell>
-                            <TableCell>
-                              <IconButton color="primary" onClick={() => { setEditingUser(user); setFormData({ email: user.email, password: '', isActive: user.isActive }); setOpenDialog(true); }}>
-                                <EditIcon />
-                              </IconButton>
-                              <IconButton color="error" onClick={() => handleDelete(user._id)}>
-                                <DeleteIcon />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               )}
             </CardContent>
           </Card>

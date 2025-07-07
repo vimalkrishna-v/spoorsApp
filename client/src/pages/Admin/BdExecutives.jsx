@@ -28,6 +28,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Navbar from '../../components/Navbar';
 import Chip from '@mui/material/Chip';
 import { userApiService } from '../../services/adminApiService';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 const BdExecutives = () => {
   const [executives, setExecutives] = useState([]);
@@ -162,16 +163,23 @@ const BdExecutives = () => {
       <Container maxWidth="lg">
         <Box my={4}>
           <Card>
-            <CardHeader
-              title="BD Executives"
-              subheader="Create, edit, and manage Business Development Executives."
-            />
-            <CardContent>
-              <Box mb={3} display="flex" justifyContent="flex-end">
-                <Button variant="contained" color="primary" onClick={handleOpenAddModal}>
-                  Add BD Executive
-                </Button>
+            <Box display="flex" alignItems="center" justifyContent="space-between" px={3} pt={2}>
+              <Box display="flex" alignItems="center" gap={1}>
+                <AssignmentIcon color="primary" />
+                <Box>
+                  <Typography variant="h6" component="div">
+                    BD Executives
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Create, edit, and manage Business Development Executives.
+                  </Typography>
+                </Box>
               </Box>
+              <Button variant="contained" color="primary" onClick={handleOpenAddModal}>
+                Add BD Executive
+              </Button>
+            </Box>
+            <CardContent>
               {loading ? (
                 <Typography>Loading...</Typography>
               ) : error ? (
