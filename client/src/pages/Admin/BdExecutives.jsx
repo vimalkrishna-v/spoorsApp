@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -18,67 +18,77 @@ import {
   Paper,
   List,
   ListItem,
+  Container,
+  Card,
+  CardHeader,
+  CardContent,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Navbar from '../../components/Navbar';
-
-const initialExecutives = [
-  {
-    id: 'BD001',
-    name: 'John Doe',
-    email: 'john.doe@spoorsapp.com',
-    password: 'bd1234',
-    contact: '9876543210',
-    assignedOperators: ['OP001', 'OP002'],
-  },
-  {
-    id: 'BD002',
-    name: 'Jane Smith',
-    email: 'jane.smith@spoorsapp.com',
-    password: 'bd5678',
-    contact: '9123456780',
-    assignedOperators: ['OP003'],
-  },
-  {
-    id: 'BD003',
-    name: 'Amit Kumar',
-    email: 'amit.kumar@spoorsapp.com',
-    password: 'bd9999',
-    contact: '9988776655',
-    assignedOperators: [],
-  },
-];
-
-const emptyExecutive = {
-  id: '',
-  name: '',
-  email: '',
-  password: '',
-  contact: '',
-  assignedOperators: [],
-};
-
-const generateExecutiveId = (executives) => {
-  const maxId = executives.reduce((max, ex) => {
-    const num = parseInt(ex.id.replace('BD', ''), 10);
-    return num > max ? num : max;
-  }, 0);
-  const nextId = maxId + 1;
-  return `BD${nextId.toString().padStart(3, '0')}`;
-};
+import Chip from '@mui/material/Chip';
+import { userApiService } from '../../services/adminApiService';
 
 const BdExecutives = () => {
-  const [executives, setExecutives] = useState(initialExecutives);
+  const [executives, setExecutives] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
-  const [selectedExecutive, setSelectedExecutive] = useState(emptyExecutive);
+  const [modalMode, setModalMode] = useState('add');
+  const [selectedExecutive, setSelectedExecutive] = useState({
+    id: '',
+    name: '',
+    email: '',
+    password: '',
+    contact: '',
+    assignedOperators: [],
+    lastLogin: '',
+    createdAt: '',
+  });
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [executiveToDelete, setExecutiveToDelete] = useState(null);
 
+  useEffect(() => {
+    loadExecutives();
+  }, []);
+
+  const loadExecutives = async () => {
+    try {
+      setLoading(true);
+      const res = await userApiService.getAllBDUsers();
+      // Map backend fields to frontend expected fields
+      const bdUsers = (res.data || res).map((user, idx) => ({
+        id: user._id,
+        name: user.name || '',
+        email: user.email,
+        password: '', // never expose password
+        contact: user.contact || '',
+        assignedOperators: user.assignedOperators || [],
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+        isActive: user.isActive,
+      }));
+      setExecutives(bdUsers);
+      setError('');
+    } catch (err) {
+      setError('Failed to load BD Executives');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenAddModal = () => {
     setModalMode('add');
-    setSelectedExecutive({ ...emptyExecutive, id: generateExecutiveId(executives) });
+    setSelectedExecutive({
+      id: '',
+      name: '',
+      email: '',
+      password: '',
+      contact: '',
+      assignedOperators: [],
+      lastLogin: '',
+      createdAt: '',
+    });
     setModalOpen(true);
   };
 
@@ -95,7 +105,16 @@ const BdExecutives = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
-    setSelectedExecutive(emptyExecutive);
+    setSelectedExecutive({
+      id: '',
+      name: '',
+      email: '',
+      password: '',
+      contact: '',
+      assignedOperators: [],
+      lastLogin: '',
+      createdAt: '',
+    });
   };
 
   const handleCloseDeleteModal = () => {
@@ -107,151 +126,184 @@ const BdExecutives = () => {
     setSelectedExecutive({ ...selectedExecutive, [e.target.name]: e.target.value });
   };
 
-  const handleAddExecutive = () => {
-    setExecutives([...executives, selectedExecutive]);
-    handleCloseModal();
+  const handleAddExecutive = async () => {
+    try {
+      const res = await userApiService.createBDUser(selectedExecutive);
+      setExecutives([...executives, { ...selectedExecutive, id: res.data._id }]);
+      handleCloseModal();
+    } catch (err) {
+      setError('Failed to add BD Executive');
+    }
   };
 
-  const handleUpdateExecutive = () => {
-    setExecutives(executives.map(ex => ex.id === selectedExecutive.id ? selectedExecutive : ex));
-    handleCloseModal();
+  const handleUpdateExecutive = async () => {
+    try {
+      await userApiService.updateBDUser(selectedExecutive.id, selectedExecutive);
+      setExecutives(executives.map(ex => ex.id === selectedExecutive.id ? selectedExecutive : ex));
+      handleCloseModal();
+    } catch (err) {
+      setError('Failed to update BD Executive');
+    }
   };
 
-  const handleDeleteExecutive = () => {
-    setExecutives(executives.filter(ex => ex.id !== executiveToDelete.id));
-    handleCloseDeleteModal();
+  const handleDeleteExecutive = async () => {
+    try {
+      await userApiService.deleteBDUser(executiveToDelete.id);
+      setExecutives(executives.filter(ex => ex.id !== executiveToDelete.id));
+      handleCloseDeleteModal();
+    } catch (err) {
+      setError('Failed to delete BD Executive');
+    }
   };
 
   return (
     <>
       <Navbar />
-      <Box sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4">BD Executives</Typography>
-          <Button variant="contained" color="primary" onClick={handleOpenAddModal}>
-            Add BD Executive
-          </Button>
+      <Container maxWidth="lg">
+        <Box my={4}>
+          <Card>
+            <CardHeader
+              title="BD Executives"
+              subheader="Create, edit, and manage Business Development Executives."
+            />
+            <CardContent>
+              <Box mb={3} display="flex" justifyContent="flex-end">
+                <Button variant="contained" color="primary" onClick={handleOpenAddModal}>
+                  Add BD Executive
+                </Button>
+              </Box>
+              {loading ? (
+                <Typography>Loading...</Typography>
+              ) : error ? (
+                <Typography color="error">{error}</Typography>
+              ) : (
+                <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                        <TableCell>ID</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Password</TableCell>
+                        <TableCell>Contact</TableCell>
+                        <TableCell>Assigned Operators</TableCell>
+                        <TableCell>Last Login</TableCell>
+                        <TableCell>Created At</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {executives.map((ex, idx) => (
+                        <TableRow key={ex.id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
+                          <TableCell sx={{ fontWeight: 500 }}>{ex.id}</TableCell>
+                          <TableCell>{ex.name}</TableCell>
+                          <TableCell>{ex.email}</TableCell>
+                          <TableCell>{ex.password}</TableCell>
+                          <TableCell>{ex.contact}</TableCell>
+                          <TableCell>
+                            {ex.assignedOperators.length ? (
+                              <Box display="flex" flexWrap="wrap" gap={1}>
+                                {ex.assignedOperators.map(opId => (
+                                  <Chip key={opId} label={opId} color="primary" variant="outlined" size="small" />
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">No operators assigned</Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>{new Date(ex.lastLogin).toLocaleString()}</TableCell>
+                          <TableCell>{new Date(ex.createdAt).toLocaleString()}</TableCell>
+                          <TableCell>
+                            <IconButton color="primary" onClick={() => handleOpenEditModal(ex)}>
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton color="error" onClick={() => handleOpenDeleteModal(ex)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </CardContent>
+          </Card>
         </Box>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Password</TableCell>
-                <TableCell>Contact</TableCell>
-                <TableCell>Assigned Operators</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {executives.map((ex) => (
-                <TableRow key={ex.id}>
-                  <TableCell>{ex.id}</TableCell>
-                  <TableCell>{ex.name}</TableCell>
-                  <TableCell>{ex.email}</TableCell>
-                  <TableCell>{ex.password}</TableCell>
-                  <TableCell>{ex.contact}</TableCell>
-                  <TableCell>
-                    <List dense>
-                      {ex.assignedOperators.length === 0 ? (
-                        <ListItem>-</ListItem>
-                      ) : (
-                        ex.assignedOperators.map(opId => (
-                          <ListItem key={opId}>{opId}</ListItem>
-                        ))
-                      )}
-                    </List>
-                  </TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenEditModal(ex)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleOpenDeleteModal(ex)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      </Container>
 
-        {/* Add/Edit Modal */}
-        <Dialog open={modalOpen} onClose={handleCloseModal}>
-          <DialogTitle>{modalMode === 'add' ? 'Add BD Executive' : 'Edit BD Executive'}</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="dense"
-              label="ID"
-              name="id"
-              value={selectedExecutive.id}
-              onChange={handleChange}
-              fullWidth
-              disabled
-            />
-            <TextField
-              margin="dense"
-              label="Name"
-              name="name"
-              value={selectedExecutive.name}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              margin="dense"
-              label="Email"
-              name="email"
-              value={selectedExecutive.email}
-              onChange={handleChange}
-              fullWidth
-            />
-            <TextField
-              margin="dense"
-              label="Password"
-              name="password"
-              value={selectedExecutive.password}
-              onChange={handleChange}
-              fullWidth
-              type="password"
-            />
-            <TextField
-              margin="dense"
-              label="Contact"
-              name="contact"
-              value={selectedExecutive.contact}
-              onChange={handleChange}
-              fullWidth
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseModal}>Cancel</Button>
-            {modalMode === 'add' ? (
-              <Button onClick={handleAddExecutive} variant="contained">Add BD Executive</Button>
-            ) : (
-              <Button onClick={handleUpdateExecutive} variant="contained">Update</Button>
-            )}
-          </DialogActions>
-        </Dialog>
+      {/* Add/Edit Modal */}
+      <Dialog open={modalOpen} onClose={handleCloseModal}>
+        <DialogTitle>{modalMode === 'add' ? 'Add BD Executive' : 'Edit BD Executive'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="ID"
+            name="id"
+            value={selectedExecutive.id}
+            onChange={handleChange}
+            fullWidth
+            disabled
+          />
+          <TextField
+            margin="dense"
+            label="Name"
+            name="name"
+            value={selectedExecutive.name}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            margin="dense"
+            label="Email"
+            name="email"
+            value={selectedExecutive.email}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            margin="dense"
+            label="Password"
+            name="password"
+            value={selectedExecutive.password}
+            onChange={handleChange}
+            fullWidth
+            type="password"
+          />
+          <TextField
+            margin="dense"
+            label="Contact"
+            name="contact"
+            value={selectedExecutive.contact}
+            onChange={handleChange}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal}>Cancel</Button>
+          {modalMode === 'add' ? (
+            <Button onClick={handleAddExecutive} variant="contained">Add BD Executive</Button>
+          ) : (
+            <Button onClick={handleUpdateExecutive} variant="contained">Update</Button>
+          )}
+        </DialogActions>
+      </Dialog>
 
-        {/* Delete Confirmation Modal */}
-        <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal}>
-          <DialogTitle>Delete BD Executive</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete BD Executive <b>{executiveToDelete?.name}</b>?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteModal}>Cancel</Button>
-            <Button onClick={handleDeleteExecutive} color="error" variant="contained">Delete</Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onClose={handleCloseDeleteModal}>
+        <DialogTitle>Delete BD Executive</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete BD Executive <b>{executiveToDelete?.name}</b>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteModal}>Cancel</Button>
+          <Button onClick={handleDeleteExecutive} color="error" variant="contained">Delete</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
 
 export default BdExecutives;
-

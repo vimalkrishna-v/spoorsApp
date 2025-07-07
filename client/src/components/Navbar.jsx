@@ -44,10 +44,11 @@ const Navbar = () => {
   // Define navigation items based on user role
   const adminNavItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/admin/dashboard' },
+    { text: 'BD Executives', icon: <People />, path: '/admin/bd-users' },
     { text: 'Bus Operators', icon: <DirectionsBus />, path: '/admin/bus-operators' },
-    { text: 'BD Users', icon: <People />, path: '/admin/bd-users' },
     { text: 'Assignments', icon: <AssignmentInd />, path: '/admin/assignments' },
     { text: 'Checkins', icon: <History />, path: '/admin/checkins' },
+    { text: 'Analytics', icon: <Dashboard />, path: '/admin/analytics' },
   ];
 
   const bdNavItems = [
@@ -175,7 +176,7 @@ const Navbar = () => {
           ) : null}
 
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Spoors APP
+            Spoors App
           </Typography>
 
           {/* Desktop navigation */}

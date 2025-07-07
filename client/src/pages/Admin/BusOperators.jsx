@@ -428,11 +428,11 @@ const BusOperators = () => {
 
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
                   <FormControl fullWidth>
-                    <InputLabel>Assigned BD User</InputLabel>
+                    <InputLabel>Assigned BD Executive</InputLabel>
                     <Select
                       value={formData.assignedTo}
                       onChange={(e) => handleInputChange('assignedTo', e.target.value)}
-                      label="Assigned BD User"
+                      label="Assigned BD Executive"
                       required
                     >
                       {bdUsers.map((user) => (

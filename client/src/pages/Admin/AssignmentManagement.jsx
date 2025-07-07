@@ -27,7 +27,8 @@ import {
   CardHeader,
   Checkbox,
   ListItemText,
-  OutlinedInput
+  OutlinedInput,
+  Paper
 } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -74,17 +75,15 @@ const AssignmentManagement = () => {
       setBdUsers(usersResponse.data);
       setOperators(operatorsResponse.data);
       
-      // Group operators by assigned user for easy display
+      // Map each BD user to their assigned operators
       const assignmentMap = {};
+      usersResponse.data.forEach(user => {
+        assignmentMap[user._id] = [];
+      });
       operatorsResponse.data.forEach(operator => {
-        const userId = operator.assignedTo._id;
-        if (!assignmentMap[userId]) {
-          assignmentMap[userId] = {
-            user: operator.assignedTo,
-            operators: []
-          };
+        if (operator.assignedTo && assignmentMap[operator.assignedTo._id]) {
+          assignmentMap[operator.assignedTo._id].push(operator);
         }
-        assignmentMap[userId].operators.push(operator);
       });
       setAssignments(assignmentMap);
       
@@ -157,165 +156,135 @@ const AssignmentManagement = () => {
   return (
     <>
       <Navbar />
-      <Container maxWidth="xl">
-        <Box sx={{ py: 4 }}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-            <IconButton onClick={() => navigate('/admin/dashboard')} sx={{ mr: 2 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-              Assignment Management
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AssignmentIcon />}
-              onClick={handleOpenDialog}
-              sx={{ ml: 2 }}
-            >
-              Assign Operators
-            </Button>
-          </Box>
-
-          {/* Alerts */}
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
-              {success}
-            </Alert>
-          )}
-
-          {/* Current Assignments */}
+      <Container maxWidth="lg">
+        <Box my={4}>
           <Card>
-            <CardHeader title="Current Operator Assignments" />
+            <CardHeader
+              avatar={<AssignmentIcon color="primary" />}
+              title="Operator Assignments"
+              subheader="Assign bus operators to BD Executives."
+            />
             <CardContent>
+              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+              {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
               {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
                   <CircularProgress />
                 </Box>
               ) : (
-                <Box>
-                  {Object.keys(assignments).length === 0 ? (
-                    <Typography align="center" color="textSecondary" sx={{ py: 4 }}>
-                      No assignments found
-                    </Typography>
-                  ) : (
-                    Object.entries(assignments).map(([userId, assignment]) => (
-                      <Card key={userId} sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
-                        <CardHeader
-                          title={`BD User: ${assignment.user.email}`}
-                          subheader={`${assignment.operators.length} operators assigned`}
-                          sx={{ bgcolor: '#f5f5f5' }}
-                        />
-                        <CardContent>
-                          <TableContainer>
-                            <Table size="small">
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>Operator Name</TableCell>
-                                  <TableCell>Contact Person</TableCell>
-                                  <TableCell>Phone</TableCell>
-                                  <TableCell>Status</TableCell>
-                                  <TableCell>Last Visit</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {assignment.operators.map((operator) => (
-                                  <TableRow key={operator._id}>
-                                    <TableCell>{operator.name}</TableCell>
-                                    <TableCell>{operator.contactPerson}</TableCell>
-                                    <TableCell>{operator.phone}</TableCell>
-                                    <TableCell>
-                                      <Chip
-                                        label={operator.status}
-                                        color={getStatusColor(operator.status)}
-                                        size="small"
-                                        sx={{ textTransform: 'capitalize' }}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      {operator.lastVisit ? formatDate(operator.lastVisit) : 'Never'}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </TableContainer>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </Box>
+                <>
+                  <Box mb={3}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => setOpenDialog(true)}
+                      startIcon={<AssignmentIcon />}
+                    >
+                      Assign Operators
+                    </Button>
+                  </Box>
+                  <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell>BD Executive</TableCell>
+                          <TableCell>Assigned Operators</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {bdUsers.map((user, idx) => (
+                          <TableRow key={user._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
+                            <TableCell sx={{ fontWeight: 500 }}>{user.email}</TableCell>
+                            <TableCell>
+                              {assignments[user._id]?.length ? (
+                                <Box display="flex" flexWrap="wrap" gap={1}>
+                                  {assignments[user._id].map((op) => (
+                                    <Chip key={op._id} label={op.name} color="primary" variant="outlined" />
+                                  ))}
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">No operators assigned</Typography>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
               )}
             </CardContent>
           </Card>
-
-          {/* Assignment Dialog */}
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-            <DialogTitle>Assign Operators to BD User</DialogTitle>
-            <DialogContent>
-              <Box sx={{ pt: 2 }}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Select BD User</InputLabel>
-                  <Select
-                    value={selectedBDUser}
-                    onChange={(e) => setSelectedBDUser(e.target.value)}
-                    label="Select BD User"
-                  >
-                    {bdUsers.map((user) => (
-                      <MenuItem key={user._id} value={user._id}>
-                        {user.email}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Select Operators</InputLabel>
-                  <Select
-                    multiple
-                    value={selectedOperators}
-                    onChange={handleOperatorSelectionChange}
-                    input={<OutlinedInput label="Select Operators" />}
-                    renderValue={(selected) => {
-                      const selectedNames = operators
-                        .filter(op => selected.includes(op._id))
-                        .map(op => op.name);
-                      return selectedNames.join(', ');
-                    }}
-                    MenuProps={MenuProps}
-                  >
-                    {getUnassignedOperators().map((operator) => (
-                      <MenuItem key={operator._id} value={operator._id}>
-                        <Checkbox checked={selectedOperators.indexOf(operator._id) > -1} />
-                        <ListItemText 
-                          primary={operator.name}
-                          secondary={`Contact: ${operator.contactPerson} | Current: ${operator.assignedTo.email}`}
-                        />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {selectedBDUser && (
-                  <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-                    Note: Selected operators will be reassigned to the chosen BD user.
-                  </Typography>
-                )}
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button onClick={handleSubmit} variant="contained">
-                Assign Operators
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Box>
+        {/* Assignment Dialog */}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Assign Operators to BD Executive</DialogTitle>
+          <DialogContent>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel id="bd-user-label">BD Executive</InputLabel>
+              <Select
+                labelId="bd-user-label"
+                value={selectedBDUser}
+                onChange={e => setSelectedBDUser(e.target.value)}
+                input={<OutlinedInput label="BD Executive" />}
+              >
+                {bdUsers.map(user => (
+                  <MenuItem key={user._id} value={user._id}>{user.email}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="operator-label">Operators</InputLabel>
+              <Select
+                labelId="operator-label"
+                multiple
+                value={selectedOperators}
+                onChange={e => setSelectedOperators(e.target.value)}
+                input={<OutlinedInput label="Operators" />}
+                renderValue={selected =>
+                  operators
+                    .filter(op => selected.includes(op._id))
+                    .map(op => op.name)
+                    .join(', ')
+                }
+                MenuProps={MenuProps}
+              >
+                {operators.map(op => (
+                  <MenuItem key={op._id} value={op._id}>
+                    <Checkbox checked={selectedOperators.indexOf(op._id) > -1} />
+                    <ListItemText primary={op.name} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)} color="secondary">Cancel</Button>
+            <Button
+              onClick={async () => {
+                try {
+                  if (!selectedBDUser || selectedOperators.length === 0) {
+                    setError('Please select a BD user and at least one operator');
+                    return;
+                  }
+
+                  await userApiService.assignOperatorsToBD(selectedBDUser, selectedOperators);
+                  setSuccess('Operators assigned successfully');
+                  setOpenDialog(false);
+                  loadData();
+                } catch (err) {
+                  setError(err.response?.data?.message || 'Failed to assign operators');
+                  console.error('Error assigning operators:', err);
+                }
+              }}
+              variant="contained"
+              color="primary"
+              disabled={!selectedBDUser || selectedOperators.length === 0}
+            >
+              Assign
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );

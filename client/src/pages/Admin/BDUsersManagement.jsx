@@ -60,7 +60,7 @@ const BDUsersManagement = () => {
       setUsers(response.data);
       setError('');
     } catch (err) {
-      setError('Failed to load BD users');
+      setError('Failed to load BD Executives');
       console.error('Error loading users:', err);
     } finally {
       setLoading(false);
@@ -166,150 +166,110 @@ const BDUsersManagement = () => {
     <>
       <Navbar />
       <Container maxWidth="lg">
-        <Box sx={{ py: 4 }}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-            <IconButton onClick={() => navigate('/admin/dashboard')} sx={{ mr: 2 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-              BD Users Management
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenDialog()}
-              sx={{ ml: 2 }}
-            >
-              Add BD User
-            </Button>
-          </Box>
-
-          {/* Alerts */}
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
-              {success}
-            </Alert>
-          )}
-
-          {/* Users Table */}
+        <Box my={4}>
           <Card>
-            <CardHeader title="Business Development Users" />
+            <CardHeader
+              title="BD Executives Management"
+              subheader="Manage BD Executives and their details."
+            />
             <CardContent>
+              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+              {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
               {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
                   <CircularProgress />
                 </Box>
               ) : (
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Email</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Last Login</TableCell>
-                        <TableCell>Created At</TableCell>
-                        <TableCell align="center">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {users.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} align="center">
-                            No BD users found
-                          </TableCell>
+                <>
+                  <Box mb={3} display="flex" justifyContent="flex-end">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<AddIcon />}
+                      onClick={() => { setEditingUser(null); setFormData({ email: '', password: '', isActive: true }); setOpenDialog(true); }}
+                    >
+                      Add BD Executive
+                    </Button>
+                  </Box>
+                  <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell>Email</TableCell>
+                          <TableCell>Status</TableCell>
+                          <TableCell>Last Login</TableCell>
+                          <TableCell>Created At</TableCell>
+                          <TableCell>Actions</TableCell>
                         </TableRow>
-                      ) : (
-                        users.map((user) => (
-                          <TableRow key={user._id}>
-                            <TableCell>{user.email}</TableCell>
+                      </TableHead>
+                      <TableBody>
+                        {users.map((user, idx) => (
+                          <TableRow key={user._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
+                            <TableCell sx={{ fontWeight: 500 }}>{user.email}</TableCell>
                             <TableCell>
-                              <Chip
-                                label={user.isActive ? 'Active' : 'Inactive'}
-                                color={user.isActive ? 'success' : 'default'}
-                                size="small"
-                              />
+                              <Chip label={user.isActive ? 'Active' : 'Inactive'} color={user.isActive ? 'success' : 'default'} size="small" />
                             </TableCell>
+                            <TableCell>{user.lastLogin ? formatDate(user.lastLogin) : '-'}</TableCell>
+                            <TableCell>{user.createdAt ? formatDate(user.createdAt) : '-'}</TableCell>
                             <TableCell>
-                              {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
-                            </TableCell>
-                            <TableCell>{formatDate(user.createdAt)}</TableCell>
-                            <TableCell align="center">
-                              <IconButton
-                                onClick={() => handleOpenDialog(user)}
-                                color="primary"
-                                size="small"
-                              >
+                              <IconButton color="primary" onClick={() => { setEditingUser(user); setFormData({ email: user.email, password: '', isActive: user.isActive }); setOpenDialog(true); }}>
                                 <EditIcon />
                               </IconButton>
-                              <IconButton
-                                onClick={() => handleDelete(user._id)}
-                                color="error"
-                                size="small"
-                              >
+                              <IconButton color="error" onClick={() => handleDelete(user._id)}>
                                 <DeleteIcon />
                               </IconButton>
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </>
               )}
             </CardContent>
           </Card>
-
-          {/* Add/Edit User Dialog */}
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-            <DialogTitle>
-              {editingUser ? 'Edit BD User' : 'Add New BD User'}
-            </DialogTitle>
-            <DialogContent>
-              <Box sx={{ pt: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label={editingUser ? 'New Password (leave blank to keep current)' : 'Password'}
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  margin="normal"
-                  required={!editingUser}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.isActive}
-                      onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                    />
-                  }
-                  label="Active User"
-                  sx={{ mt: 2 }}
-                />
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button onClick={handleSubmit} variant="contained">
-                {editingUser ? 'Update' : 'Create'}
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Box>
+        {/* Add/Edit Dialog */}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>{editingUser ? 'Edit BD Executive' : 'Add BD Executive'}</DialogTitle>
+          <DialogContent>
+            <Box component="form" sx={{ mt: 1 }}>
+              <TextField
+                margin="normal"
+                fullWidth
+                label="Email"
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                disabled={!!editingUser}
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                placeholder={editingUser ? 'Leave blank to keep unchanged' : ''}
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.isActive}
+                    onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
+                    color="primary"
+                  />
+                }
+                label="Active"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)} color="secondary">Cancel</Button>
+            <Button onClick={handleSubmit} variant="contained" color="primary">
+              {editingUser ? 'Update' : 'Add'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );

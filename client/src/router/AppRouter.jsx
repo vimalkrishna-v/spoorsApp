@@ -10,6 +10,7 @@ import BusOperators from '../pages/Admin/BusOperators_new';
 import BDUsersManagement from '../pages/Admin/BDUsersManagement';
 import AssignmentManagement from '../pages/Admin/AssignmentManagement';
 import CheckInManagement from '../pages/Admin/CheckInManagement';
+import Analytics from '../pages/Admin/Analytics';
 
 
 // Protected Route component to handle authentication checks
@@ -73,6 +74,10 @@ const AppRouter = () => {
         <Route
           path="/admin/checkins"
           element={<ProtectedRoute element={<CheckInManagement />} requiredRole="admin" />}
+        />
+        <Route
+          path="/admin/analytics"
+          element={<ProtectedRoute element={<Analytics />} requiredRole="admin" />}
         />
         <Route
           path="/bd/dashboard"

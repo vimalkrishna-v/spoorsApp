@@ -210,224 +210,130 @@ const BusOperators = () => {
     <>
       <Navbar />
       <Container maxWidth="xl">
-        <Box sx={{ py: 4 }}>
-          {/* Header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-            <IconButton onClick={() => navigate('/admin/dashboard')} sx={{ mr: 2 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
-              Bus Operators Management
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => handleOpenDialog()}
-              sx={{ ml: 2 }}
-            >
-              Add Operator
-            </Button>
-          </Box>
-
-          {/* Alerts */}
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
-              {success}
-            </Alert>
-          )}
-
-          {/* Operators Table */}
+        <Box my={4}>
           <Card>
-            <CardHeader title="Bus Operators" />
+            <CardHeader
+              title={<Typography variant="h6">Bus Operators</Typography>}
+              subheader={<Typography variant="body2">Manage all bus operators, assign BD Executives, and edit operator details.</Typography>}
+                           action={
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenDialog()}
+                  sx={{ minWidth: 160 }}
+                >
+                  Add Operator
+                </Button>
+              }
+              sx={{ textAlign: 'left', pl: 3 }}
+            />
             <CardContent>
+              {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+              {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
               {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
                   <CircularProgress />
                 </Box>
               ) : (
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 1 }}>
                   <Table>
                     <TableHead>
-                      <TableRow>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                         <TableCell>Name</TableCell>
-                        <TableCell>Contact Person</TableCell>
-                        <TableCell>Phone</TableCell>
-                        <TableCell>Email</TableCell>
-                        <TableCell>Assigned To</TableCell>
+                        <TableCell>Address</TableCell>
+                        <TableCell>Contact</TableCell>
+                        <TableCell>Coordinates</TableCell>
+                        <TableCell>Assigned BD Executive</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell>Last Visit</TableCell>
-                        <TableCell align="center">Actions</TableCell>
+                        <TableCell align="right">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {operators.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={8} align="center">
-                            No operators found
+                      {operators.map((op, idx) => (
+                        <TableRow key={op._id} sx={{ backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white' }}>
+                          <TableCell>{op.name}</TableCell>
+                          <TableCell>{op.address}</TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{op.contactPerson}</Typography>
+                            <Typography variant="caption" color="text.secondary">{op.phone}</Typography>
+                            <Typography variant="caption" color="text.secondary">{op.email}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">Lat: {op.coordinates?.lat}</Typography>
+                            <Typography variant="body2">Lng: {op.coordinates?.lng}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            {op.assignedTo ? (
+                              <Chip label={op.assignedTo.email} color="primary" variant="outlined" />
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">Unassigned</Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Chip label={op.status.charAt(0).toUpperCase() + op.status.slice(1)} color={op.status === 'active' ? 'success' : 'default'} size="small" />
+                          </TableCell>
+                          <TableCell align="right">
+                            <IconButton color="primary" onClick={() => handleOpenDialog(op)}><EditIcon /></IconButton>
+                            <IconButton color="error" onClick={() => handleDelete(op._id)}><DeleteIcon /></IconButton>
                           </TableCell>
                         </TableRow>
-                      ) : (
-                        operators.map((operator) => (
-                          <TableRow key={operator._id}>
-                            <TableCell>{operator.name}</TableCell>
-                            <TableCell>{operator.contactPerson}</TableCell>
-                            <TableCell>{operator.phone}</TableCell>
-                            <TableCell>{operator.email}</TableCell>
-                            <TableCell>{operator.assignedTo?.email || 'Unassigned'}</TableCell>
-                            <TableCell>
-                              <Chip
-                                label={operator.status}
-                                color={getStatusColor(operator.status)}
-                                size="small"
-                                sx={{ textTransform: 'capitalize' }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              {operator.lastVisit ? formatDate(operator.lastVisit) : 'Never'}
-                            </TableCell>
-                            <TableCell align="center">
-                              <IconButton
-                                onClick={() => handleOpenDialog(operator)}
-                                color="primary"
-                                size="small"
-                              >
-                                <EditIcon />
-                              </IconButton>
-                              <IconButton
-                                onClick={() => handleDelete(operator._id)}
-                                color="error"
-                                size="small"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
+                      ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
               )}
             </CardContent>
           </Card>
-
-          {/* Add/Edit Operator Dialog */}
-          <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-            <DialogTitle>
-              {editingOperator ? 'Edit Operator' : 'Add New Operator'}
-            </DialogTitle>
-            <DialogContent>
-              <Box sx={{ pt: 2 }}>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Operator Name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
-                  />
-                  <TextField
-                    fullWidth
-                    label="Contact Person"
-                    value={formData.contactPerson}
-                    onChange={(e) => handleInputChange('contactPerson', e.target.value)}
-                    required
-                  />
-                </Box>
-                
-                <TextField
-                  fullWidth
-                  label="Address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  margin="normal"
-                  multiline
-                  rows={2}
-                  required
-                />
-
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    required
-                  />
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
-                  />
-                </Box>
-
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Latitude"
-                    type="number"
-                    value={formData.coordinates.lat}
-                    onChange={(e) => handleInputChange('coordinates.lat', e.target.value)}
-                    required
-                  />
-                  <TextField
-                    fullWidth
-                    label="Longitude"
-                    type="number"
-                    value={formData.coordinates.lng}
-                    onChange={(e) => handleInputChange('coordinates.lng', e.target.value)}
-                    required
-                  />
-                </Box>
-
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Assigned BD User</InputLabel>
-                    <Select
-                      value={formData.assignedTo}
-                      onChange={(e) => handleInputChange('assignedTo', e.target.value)}
-                      label="Assigned BD User"
-                      required
-                    >
-                      {bdUsers.map((user) => (
-                        <MenuItem key={user._id} value={user._id}>
-                          {user.email}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={formData.status}
-                      onChange={(e) => handleInputChange('status', e.target.value)}
-                      label="Status"
-                    >
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="inactive">Inactive</MenuItem>
-                      <MenuItem value="pending">Pending</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog}>Cancel</Button>
-              <Button onClick={handleSubmit} variant="contained">
-                {editingOperator ? 'Update' : 'Create'}
-              </Button>
-            </DialogActions>
-          </Dialog>
         </Box>
+        {/* Add/Edit Operator Dialog */}
+        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+          <DialogTitle>{editingOperator ? 'Edit Operator' : 'Add Operator'}</DialogTitle>
+          <DialogContent>
+            <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+              <TextField label="Name" value={formData.name} onChange={e => handleInputChange('name', e.target.value)} fullWidth required size="small" />
+              <TextField label="Address" value={formData.address} onChange={e => handleInputChange('address', e.target.value)} fullWidth required size="small" />
+              <TextField label="Contact Person" value={formData.contactPerson} onChange={e => handleInputChange('contactPerson', e.target.value)} fullWidth required size="small" />
+              <TextField label="Phone" value={formData.phone} onChange={e => handleInputChange('phone', e.target.value)} fullWidth required size="small" />
+              <TextField label="Email" value={formData.email} onChange={e => handleInputChange('email', e.target.value)} fullWidth required size="small" />
+              <Box display="flex" gap={2}>
+                <TextField label="Latitude" value={formData.coordinates.lat} onChange={e => handleInputChange('coordinates.lat', e.target.value)} required size="small" fullWidth />
+                <TextField label="Longitude" value={formData.coordinates.lng} onChange={e => handleInputChange('coordinates.lng', e.target.value)} required size="small" fullWidth />
+              </Box>
+              <FormControl fullWidth required size="small">
+                <InputLabel id="assignedTo-label">Assigned BD Executive</InputLabel>
+                <Select
+                  labelId="assignedTo-label"
+                  value={formData.assignedTo}
+                  label="Assigned BD Executive"
+                  onChange={e => handleInputChange('assignedTo', e.target.value)}
+                >
+                  {bdUsers.map(user => (
+                    <MenuItem key={user._id} value={user._id}>{user.email}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth required size="small">
+                <InputLabel id="status-label">Status</InputLabel>
+                <Select
+                  labelId="status-label"
+                  value={formData.status}
+                  label="Status"
+                  onChange={e => handleInputChange('status', e.target.value)}
+                >
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog} color="secondary">Cancel</Button>
+            <Button onClick={handleSubmit} variant="contained" color="primary">
+              {editingOperator ? 'Update' : 'Add'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );
