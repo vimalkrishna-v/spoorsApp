@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const database = require('./config/database');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
