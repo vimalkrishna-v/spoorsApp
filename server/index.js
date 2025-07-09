@@ -35,6 +35,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "../client/build")));
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
@@ -68,7 +71,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Catch-all route for React
+// Catch-all route for React (should be after all API routes and static middleware)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
