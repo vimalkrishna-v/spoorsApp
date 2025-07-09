@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
+//const path = require('path');
 const database = require('./config/database');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 
@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, "../client/build")));
+//app.use(express.static(path.join(__dirname, "../client/build")));
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -71,10 +71,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+//commenting
 // Catch-all route for React (should be after all API routes and static middleware)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
+//app.get("*", (req, res) => {
+//  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+//});
 
 // 404 handler
 app.use(notFoundHandler);
