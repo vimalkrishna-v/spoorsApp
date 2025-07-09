@@ -67,6 +67,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Catch-all route for React
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});
+
 // 404 handler
 app.use(notFoundHandler);
 
